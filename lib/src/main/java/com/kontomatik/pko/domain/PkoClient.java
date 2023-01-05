@@ -17,13 +17,13 @@ record PkoUserNameInput(
 
 record PkoPasswordInput(
     PkoInProgressLoginFlow loginFlow,
-    char[] password
+    String password
 ) {
 }
 
 record PkoOtpInput(
     PkoInProgressLoginFlow loginFlow,
-    char[] code
+    String code
 ) {
 }
 

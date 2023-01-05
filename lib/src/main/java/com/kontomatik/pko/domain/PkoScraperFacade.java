@@ -10,15 +10,15 @@ public class PkoScraperFacade {
         this.pkoAccountInfoUseCase = pkoAccountInfoUseCase;
     }
 
-    LoginInProgressPkoSession logIn(Credentials credentials) {
+    public LoginInProgressPkoSession logIn(Credentials credentials) {
         return pkoLoginUseCase.logIn(credentials);
     }
 
-    LoggedInPkoSession inputOtp(LoginInProgressPkoSession inProgressSession, Otp otp) {
+    public LoggedInPkoSession inputOtp(LoginInProgressPkoSession inProgressSession, Otp otp) {
         return pkoLoginUseCase.inputOtp(inProgressSession, otp);
     }
 
-    AccountsInfo fetchAccountsInfo(LoggedInPkoSession loggedInSession) {
+    public AccountsInfo fetchAccountsInfo(LoggedInPkoSession loggedInSession) {
         return pkoAccountInfoUseCase.fetchAccountInfo(loggedInSession);
     }
 }
