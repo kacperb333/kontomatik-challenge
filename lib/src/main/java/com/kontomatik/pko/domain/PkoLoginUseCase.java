@@ -10,9 +10,9 @@ class PkoLoginUseCase {
 
     //TODO assert correct state after invoking client method
     LoginInProgressPkoSession logIn(Credentials credentials) {
-        var inputUserNameResult = pkoClient.inputUserName(new PkoUserNameInput(credentials.login()));
+        var inputUserNameResult = pkoClient.inputUserName(new PkoClient.PkoUserNameInput(credentials.login()));
 
-        var inputPasswordResult = pkoClient.inputPassword(new PkoPasswordInput(
+        var inputPasswordResult = pkoClient.inputPassword(new PkoClient.PkoPasswordInput(
             inputUserNameResult.loginFlow(),
             credentials.password()
         ));
@@ -25,8 +25,8 @@ class PkoLoginUseCase {
     }
 
     LoggedInPkoSession inputOtp(LoginInProgressPkoSession inProgressLoginSession, Otp otp) {
-        var inputOtpResult = pkoClient.inputOpt(new PkoOtpInput(
-            new PkoInProgressLoginFlow(
+        var inputOtpResult = pkoClient.inputOpt(new PkoClient.PkoOtpInput(
+            new PkoClient.PkoInProgressLoginFlow(
                 inProgressLoginSession.sessionId(),
                 inProgressLoginSession.flowId(),
                 inProgressLoginSession.token()

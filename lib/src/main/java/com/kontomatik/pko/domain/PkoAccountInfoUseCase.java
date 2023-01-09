@@ -8,6 +8,6 @@ class PkoAccountInfoUseCase {
     }
 
     AccountsInfo fetchAccountInfo(LoggedInPkoSession session) {
-        return pkoClient.fetchAccounts(new PkoFetchAccountsInput(session.sessionId()));
+        return pkoClient.fetchAccounts(new PkoClient.PkoFetchAccountsInput(session.sessionId()));
     }
 }

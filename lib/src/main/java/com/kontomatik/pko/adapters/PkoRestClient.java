@@ -1,12 +1,10 @@
-package com.kontomatik.pko.domain;
+package com.kontomatik.pko.adapters;
 
-import com.kontomatik.pko.api.PkoRetrofitClient;
-import org.springframework.stereotype.Component;
+import com.kontomatik.pko.domain.*;
 
 import java.io.IOException;
 
-@Component
-public class PkoRestClient implements PkoClient {
+class PkoRestClient implements PkoClient {
 
     private final PkoRetrofitClient retrofitClient;
     private static final int REQUEST_VERSION = 3;

@@ -1,6 +1,5 @@
-package com.kontomatik.pko.api;
+package com.kontomatik.pko.adapters;
 
-import com.kontomatik.pko.domain.PkoRestClient;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Header;
@@ -9,7 +8,7 @@ import retrofit2.http.POST;
 
 import java.util.Map;
 
-public interface PkoRetrofitClient {
+interface PkoRetrofitClient {
 
     @Headers({
         "accept: application/json",

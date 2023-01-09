@@ -1,24 +1,23 @@
-package com.kontomatik.pko.api;
+package com.kontomatik.pko.adapters;
 
+import com.kontomatik.pko.domain.PkoClient;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-@Configuration
-public class PkoRetrofitClientConfig {
+public class PkoRetrofitClientFactory {
 
-    @Bean
-    Retrofit retrofit() {
+    public static OkHttpClient defaultOkHttp() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+        return new OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .build();
+    }
 
+    public static Retrofit defaultRetrofit(OkHttpClient okHttpClient) {
         return new Retrofit.Builder()
             .baseUrl("https://www.ipko.pl/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -26,8 +25,11 @@ public class PkoRetrofitClientConfig {
             .build();
     }
 
-    @Bean
-    PkoRetrofitClient pkoRetrofitClient(Retrofit retrofit) {
+    public static PkoRetrofitClient pkoRetrofitClient(Retrofit retrofit) {
         return retrofit.create(PkoRetrofitClient.class);
+    }
+
+    public static PkoClient defaultPkoClient(PkoRetrofitClient pkoRetrofitClient) {
+        return new PkoRestClient(pkoRetrofitClient);
     }
 }

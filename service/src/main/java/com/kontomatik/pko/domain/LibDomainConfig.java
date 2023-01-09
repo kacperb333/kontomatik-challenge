@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-class LibConfig {
+class LibDomainConfig {
 
     @Bean
     PkoScraperFacade pkoScraperFacade(PkoClient pkoClient) {
@@ -13,4 +13,5 @@ class LibConfig {
             new PkoAccountInfoUseCase(pkoClient)
         );
     }
+
 }
