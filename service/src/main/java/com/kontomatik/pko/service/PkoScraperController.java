@@ -54,14 +54,22 @@ class PkoScraperController {
             .body(new OwnerIdResponse(inputOtpResult.ownerId().value()));
     }
 
-    //TODO asynchronise
-    @GetMapping("/owner/accounts")
-    ResponseEntity<AccountsInfoResponse> fetchAccounts(
+    @PostMapping("/owner/accounts")
+    ResponseEntity<ImportAccountsResponse> importAccounts(
         @RequestHeader(OWNER_SESSION_HEADER) OwnerSessionId ownerSessionId
     ) {
-        return ResponseEntity.ok(
-            new AccountsInfoResponse(ownerAccountsService.fetchOwnerAccountsInfo(ownerSessionId).accounts())
-        );
+        var scheduleImportResult = ownerAccountsService.scheduleFetchOwnerAccountsInfo(ownerSessionId);
+        return ResponseEntity.accepted()
+            .headers(ownerSessionId(scheduleImportResult.ownerSessionId()))
+            .body(new ImportAccountsResponse(scheduleImportResult.accountsImportId().value()));
+    }
+
+    @GetMapping("/imports")
+    ResponseEntity<AccountsInfoResponse> fetchAccountsInfo(@RequestParam AccountsImportId accountsImportId) {
+        return ownerAccountsService.fetchSingleImport(accountsImportId)
+            .map(it -> new AccountsInfoResponse(it.accounts()))
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     private static HttpHeaders ownerSessionId(OwnerSessionId ownerSessionId) {
@@ -82,6 +90,11 @@ class PkoScraperController {
 
     private record OwnerIdResponse(
         String ownerId
+    ) {
+    }
+
+    private record ImportAccountsResponse(
+        String accountImportId
     ) {
     }
 
