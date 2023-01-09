@@ -27,12 +27,14 @@ public interface PkoClient {
     }
 
     record PkoInProgressLoginResult(
-        PkoInProgressLoginFlow loginFlow
+        PkoInProgressLoginFlow loginFlow,
+        PkoInProgressLoginAssertionData assertionData
     ) {
     }
 
     record PkoSuccessfulLoginResult(
-        SessionId internalSessionId
+        SessionId internalSessionId,
+        PkoSuccessfulLoginAssertionData assertionData
     ) {
     }
 
@@ -40,6 +42,17 @@ public interface PkoClient {
         SessionId internalSessionId,
         FlowId flowId,
         Token token
+    ) {
+    }
+
+    record PkoInProgressLoginAssertionData(
+        String stateId
+    ) {
+    }
+
+    record PkoSuccessfulLoginAssertionData(
+        String stateId,
+        Boolean finished
     ) {
     }
 

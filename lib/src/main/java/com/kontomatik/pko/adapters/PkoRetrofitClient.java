@@ -50,10 +50,14 @@ interface PkoRetrofitClient {
     class PkoLoginResponse {
         public final String flow_id;
         public final String token;
+        public final String state_id;
+        public final Boolean finished;
 
-        public PkoLoginResponse(String flow_id, String token) {
+        public PkoLoginResponse(String flow_id, String token, String state_id, Boolean finished) {
             this.flow_id = flow_id;
             this.token = token;
+            this.state_id = state_id;
+            this.finished = finished;
         }
     }
 

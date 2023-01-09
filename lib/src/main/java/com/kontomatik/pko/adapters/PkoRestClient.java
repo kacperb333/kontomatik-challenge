@@ -8,6 +8,7 @@ class PkoRestClient implements PkoClient {
 
     private final PkoRetrofitClient retrofitClient;
     private static final int REQUEST_VERSION = 3;
+    private static final String SESSION_HEADER = "x-session-id";
 
     public PkoRestClient(PkoRetrofitClient retrofitClient) {
         this.retrofitClient = retrofitClient;
@@ -22,9 +23,12 @@ class PkoRestClient implements PkoClient {
             var response = call.execute();
             return new PkoInProgressLoginResult(
                 new PkoInProgressLoginFlow(
-                    new SessionId(response.headers().get("x-session-id")),
+                    new SessionId(response.headers().get(SESSION_HEADER)),
                     new FlowId(response.body().flow_id),
                     new Token(response.body().token)
+                ),
+                new PkoInProgressLoginAssertionData(
+                    response.body().state_id
                 )
             );
         } catch (IOException e) {
@@ -46,9 +50,12 @@ class PkoRestClient implements PkoClient {
             var response = call.execute();
             return new PkoInProgressLoginResult(
                 new PkoInProgressLoginFlow(
-                    new SessionId(response.headers().get("x-session-id")),
+                    new SessionId(response.headers().get(SESSION_HEADER)),
                     new FlowId(response.body().flow_id),
                     new Token(response.body().token)
+                ),
+                new PkoInProgressLoginAssertionData(
+                    response.body().state_id
                 )
             );
         } catch (IOException e) {
@@ -68,7 +75,13 @@ class PkoRestClient implements PkoClient {
                 )
             );
             var response = call.execute();
-            return new PkoSuccessfulLoginResult(new SessionId(response.headers().get("x-session-id")));
+            return new PkoSuccessfulLoginResult(
+                new SessionId(response.headers().get(SESSION_HEADER)),
+                new PkoSuccessfulLoginAssertionData(
+                    response.body().state_id,
+                    response.body().finished
+                )
+            );
         } catch (IOException e) {
             throw new PkoClientIOException(e);
         }

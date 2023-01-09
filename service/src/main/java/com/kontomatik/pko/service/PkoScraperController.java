@@ -1,7 +1,6 @@
 package com.kontomatik.pko.service;
 
 import com.kontomatik.pko.domain.AccountInfo;
-import com.kontomatik.pko.domain.AccountsInfo;
 import com.kontomatik.pko.domain.Credentials;
 import com.kontomatik.pko.domain.Otp;
 import org.springframework.http.HttpStatus;
