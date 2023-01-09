@@ -1,5 +1,7 @@
 package com.kontomatik.pko.service;
 
+import java.util.Optional;
+
 public interface OwnerSessionRepository {
     InitialOwnerSession store(InitialOwnerSession initialOwnerSession);
 
@@ -7,9 +9,9 @@ public interface OwnerSessionRepository {
 
     LoggedInOwnerSession store(LoggedInOwnerSession loggedInOwnerSession);
 
-    InitialOwnerSession fetchInitialOwnerSession(OwnerId ownerId);
+    Optional<InitialOwnerSession> fetchInitialOwnerSession(OwnerId ownerId);
 
-    LoginInProgressOwnerSession fetchLoginInProgressOwnerSession(OwnerId ownerId);
+    Optional<LoginInProgressOwnerSession> fetchLoginInProgressOwnerSession(OwnerId ownerId);
 
-    LoggedInOwnerSession fetchLoggedInOwnerSession(OwnerId ownerId);
+    Optional<LoggedInOwnerSession> fetchLoggedInOwnerSession(OwnerId ownerId);
 }

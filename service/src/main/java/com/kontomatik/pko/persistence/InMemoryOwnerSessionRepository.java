@@ -3,10 +3,10 @@ package com.kontomatik.pko.persistence;
 import com.kontomatik.pko.service.*;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-//TODO rework maybe? Clear previous session state?
 @Component
 class InMemoryOwnerSessionRepository implements OwnerSessionRepository {
 
@@ -16,31 +16,38 @@ class InMemoryOwnerSessionRepository implements OwnerSessionRepository {
 
     @Override
     public InitialOwnerSession store(InitialOwnerSession initialOwnerSession) {
-        return initialSessions.put(initialOwnerSession.ownerId(), initialOwnerSession);
+        initialSessions.put(initialOwnerSession.ownerId(), initialOwnerSession);
+        return initialOwnerSession;
     }
 
     @Override
     public LoginInProgressOwnerSession store(LoginInProgressOwnerSession loginInProgressOwnerSession) {
-        return inProgressSessions.put(loginInProgressOwnerSession.ownerId(), loginInProgressOwnerSession);
+        var key = loginInProgressOwnerSession.ownerId();
+        initialSessions.remove(key);
+        inProgressSessions.put(key, loginInProgressOwnerSession);
+        return loginInProgressOwnerSession;
     }
 
     @Override
     public LoggedInOwnerSession store(LoggedInOwnerSession loggedInOwnerSession) {
-        return loggedInSessions.put(loggedInOwnerSession.ownerId(), loggedInOwnerSession);
+        var key = loggedInOwnerSession.ownerId();
+        inProgressSessions.remove(key);
+        loggedInSessions.put(key, loggedInOwnerSession);
+        return loggedInOwnerSession;
     }
 
     @Override
-    public InitialOwnerSession fetchInitialOwnerSession(OwnerId ownerId) {
-        return initialSessions.get(ownerId);
+    public Optional<InitialOwnerSession> fetchInitialOwnerSession(OwnerId ownerId) {
+        return Optional.ofNullable(initialSessions.get(ownerId));
     }
 
     @Override
-    public LoginInProgressOwnerSession fetchLoginInProgressOwnerSession(OwnerId ownerId) {
-        return inProgressSessions.get(ownerId);
+    public Optional<LoginInProgressOwnerSession> fetchLoginInProgressOwnerSession(OwnerId ownerId) {
+        return Optional.ofNullable(inProgressSessions.get(ownerId));
     }
 
     @Override
-    public LoggedInOwnerSession fetchLoggedInOwnerSession(OwnerId ownerId) {
-        return loggedInSessions.get(ownerId);
+    public Optional<LoggedInOwnerSession> fetchLoggedInOwnerSession(OwnerId ownerId) {
+        return Optional.ofNullable(loggedInSessions.get(ownerId));
     }
 }

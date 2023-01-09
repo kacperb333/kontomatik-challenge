@@ -1,9 +1,6 @@
 package com.kontomatik.pko.service;
 
-import com.kontomatik.pko.domain.Credentials;
-import com.kontomatik.pko.domain.LoginInProgressPkoSession;
-import com.kontomatik.pko.domain.Otp;
-import com.kontomatik.pko.domain.PkoScraperFacade;
+import com.kontomatik.pko.domain.*;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,36 +18,60 @@ class OwnerSessionService {
         return ownerSessionRepository.store(new InitialOwnerSession(ownerId));
     }
 
-    //TODO handle not found session - create one in place?
-    //TODO handle exceptions
     public LoginInProgressOwnerSession logIn(OwnerId ownerId, Credentials credentials) {
-        var initialSession = ownerSessionRepository.fetchInitialOwnerSession(ownerId);
-        var inProgressPkoSession = pkoScraperFacade.logIn(credentials);
+        var loginInProgressSession = ownerSessionRepository.fetchInitialOwnerSession(ownerId)
+            .map(initialOwnerSession -> {
+                var inProgressPkoSession = pkoScraperFacade.logIn(credentials);
+                return asLogInInProgressOwnerSession(inProgressPkoSession, initialOwnerSession);
+            })
+            .orElseThrow(() -> new OwnerSessionNotInitialized(ownerId));
 
-        return ownerSessionRepository.store(new LoginInProgressOwnerSession(
-            initialSession.ownerId(),
+        return ownerSessionRepository.store(loginInProgressSession);
+    }
+
+    public LoggedInOwnerSession inputOtp(OwnerId ownerId, Otp otp) {
+        var loggedInSession = ownerSessionRepository.fetchLoginInProgressOwnerSession(ownerId)
+            .map(inProgressOwnerSession -> {
+                var loggedInPkoSession = pkoScraperFacade.inputOtp(
+                    asLoginInProgressPkoSession(inProgressOwnerSession),
+                    otp
+                );
+                return asLoggedInOwnerSession(loggedInPkoSession, inProgressOwnerSession);
+            })
+            .orElseThrow(() -> new OwnerSessionLoginNotInProgress(ownerId));
+
+        return ownerSessionRepository.store(loggedInSession);
+    }
+
+    private static LoginInProgressOwnerSession asLogInInProgressOwnerSession(
+        LoginInProgressPkoSession inProgressPkoSession,
+        InitialOwnerSession initialOwnerSession
+    ) {
+        return new LoginInProgressOwnerSession(
+            initialOwnerSession.ownerId(),
             inProgressPkoSession.sessionId(),
             inProgressPkoSession.flowId(),
             inProgressPkoSession.token()
-        ));
+        );
     }
 
-    //TODO handle not found session
-    //TODO handle exceptions
-    public LoggedInOwnerSession inputOtp(OwnerId ownerId, Otp otp) {
-        var inProgressOwnerSession = ownerSessionRepository.fetchLoginInProgressOwnerSession(ownerId);
-        var loggedInPkoSession = pkoScraperFacade.inputOtp(
-            new LoginInProgressPkoSession(
-                inProgressOwnerSession.sessionId(),
-                inProgressOwnerSession.flowId(),
-                inProgressOwnerSession.token()
-            ),
-            otp
+    private static LoginInProgressPkoSession asLoginInProgressPkoSession(
+        LoginInProgressOwnerSession inProgressOwnerSession
+    ) {
+        return new LoginInProgressPkoSession(
+            inProgressOwnerSession.sessionId(),
+            inProgressOwnerSession.flowId(),
+            inProgressOwnerSession.token()
         );
+    }
 
-        return ownerSessionRepository.store(new LoggedInOwnerSession(
+    private static LoggedInOwnerSession asLoggedInOwnerSession(
+        LoggedInPkoSession loggedInPkoSession,
+        LoginInProgressOwnerSession inProgressOwnerSession
+    ) {
+        return new LoggedInOwnerSession(
             inProgressOwnerSession.ownerId(),
             loggedInPkoSession.sessionId()
-        ));
+        );
     }
 }

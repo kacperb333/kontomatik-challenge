@@ -16,13 +16,14 @@ class OwnerAccountsService {
         this.ownerSessionRepository = ownerSessionRepository;
     }
 
-    //TODO handle not found session
-    //TODO handle exceptions
     //TODO asynchronise
     public AccountsInfo fetchOwnerAccountsInfo(OwnerId ownerId) {
-        var loggedInOwnerSession = ownerSessionRepository.fetchLoggedInOwnerSession(ownerId);
-        return pkoScraperFacade.fetchAccountsInfo(
-            new LoggedInPkoSession(loggedInOwnerSession.sessionId())
-        );
+        return ownerSessionRepository.fetchLoggedInOwnerSession(ownerId)
+            .map(loggedInOwnerSession -> pkoScraperFacade.fetchAccountsInfo(asLoggedInPkoSession(loggedInOwnerSession)))
+            .orElseThrow(() -> new OwnerSessionNotLoggedIn(ownerId));
+    }
+
+    private static LoggedInPkoSession asLoggedInPkoSession(LoggedInOwnerSession loggedInOwnerSession) {
+        return new LoggedInPkoSession(loggedInOwnerSession.sessionId());
     }
 }

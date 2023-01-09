@@ -8,6 +8,7 @@ class PkoLoginUseCase {
         this.pkoClient = pkoClient;
     }
 
+    //TODO assert correct state after invoking client method
     LoginInProgressPkoSession logIn(Credentials credentials) {
         var inputUserNameResult = pkoClient.inputUserName(new PkoUserNameInput(credentials.login()));
 

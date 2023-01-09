@@ -30,7 +30,7 @@ public class PkoRestClient implements PkoClient {
                 )
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new PkoClientIOException(e);
         }
     }
 
@@ -54,7 +54,7 @@ public class PkoRestClient implements PkoClient {
                 )
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new PkoClientIOException(e);
         }
     }
 
@@ -72,7 +72,7 @@ public class PkoRestClient implements PkoClient {
             var response = call.execute();
             return new PkoSuccessfulLoginResult(new SessionId(response.headers().get("x-session-id")));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new PkoClientIOException(e);
         }
     }
 
@@ -94,7 +94,7 @@ public class PkoRestClient implements PkoClient {
 
             return new AccountsInfo(accounts.toList());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new PkoClientIOException(e);
         }
     }
 
