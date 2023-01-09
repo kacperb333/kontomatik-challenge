@@ -1,7 +1,7 @@
 package com.kontomatik.pko.domain;
 
 public record LoginInProgressPkoSession(
-    SessionId sessionId,
+    PkoSessionId pkoSessionId,
     FlowId flowId,
     Token token
 ) {

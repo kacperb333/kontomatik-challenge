@@ -33,13 +33,13 @@ public interface PkoClient {
     }
 
     record PkoSuccessfulLoginResult(
-        SessionId internalSessionId,
+        PkoSessionId internalSessionId,
         PkoSuccessfulLoginAssertionData assertionData
     ) {
     }
 
     record PkoInProgressLoginFlow(
-        SessionId internalSessionId,
+        PkoSessionId pkoSessionId,
         FlowId flowId,
         Token token
     ) {
@@ -57,7 +57,7 @@ public interface PkoClient {
     }
 
     record PkoFetchAccountsInput(
-        SessionId internalSessionId
+        PkoSessionId internalSessionId
     ) {
     }
 

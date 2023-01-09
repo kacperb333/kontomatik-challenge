@@ -1,10 +1,10 @@
 package com.kontomatik.pko.service;
 
 public class OwnerSessionLoginNotInProgress extends RuntimeException {
-    public final OwnerId ownerId;
+    public final OwnerSessionId ownerSessionId;
 
-    public OwnerSessionLoginNotInProgress(OwnerId ownerId) {
-        super(String.format("Owner's ('%s') session has no login in progress", ownerId.value()));
-        this.ownerId = ownerId;
+    public OwnerSessionLoginNotInProgress(OwnerSessionId ownerSessionId) {
+        super(String.format("Owner session [%s] has no login in progress", ownerSessionId.value()));
+        this.ownerSessionId = ownerSessionId;
     }
 }

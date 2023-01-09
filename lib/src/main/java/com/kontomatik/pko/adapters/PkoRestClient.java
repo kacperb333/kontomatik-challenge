@@ -8,7 +8,7 @@ class PkoRestClient implements PkoClient {
 
     private final PkoRetrofitClient retrofitClient;
     private static final int REQUEST_VERSION = 3;
-    private static final String SESSION_HEADER = "x-session-id";
+    private static final String PKO_SESSION_HEADER = "x-session-id";
 
     public PkoRestClient(PkoRetrofitClient retrofitClient) {
         this.retrofitClient = retrofitClient;
@@ -23,7 +23,7 @@ class PkoRestClient implements PkoClient {
             var response = call.execute();
             return new PkoInProgressLoginResult(
                 new PkoInProgressLoginFlow(
-                    new SessionId(response.headers().get(SESSION_HEADER)),
+                    new PkoSessionId(response.headers().get(PKO_SESSION_HEADER)),
                     new FlowId(response.body().flow_id),
                     new Token(response.body().token)
                 ),
@@ -40,7 +40,7 @@ class PkoRestClient implements PkoClient {
     public PkoInProgressLoginResult inputPassword(PkoPasswordInput passwordInput) {
         try {
             var call = retrofitClient.inputPassword(
-                passwordInput.loginFlow().internalSessionId().value(),
+                passwordInput.loginFlow().pkoSessionId().value(),
                 PkoRequest.pkoPasswordRequest(
                     passwordInput.loginFlow().flowId().value(),
                     passwordInput.loginFlow().token().value(),
@@ -50,7 +50,7 @@ class PkoRestClient implements PkoClient {
             var response = call.execute();
             return new PkoInProgressLoginResult(
                 new PkoInProgressLoginFlow(
-                    new SessionId(response.headers().get(SESSION_HEADER)),
+                    new PkoSessionId(response.headers().get(PKO_SESSION_HEADER)),
                     new FlowId(response.body().flow_id),
                     new Token(response.body().token)
                 ),
@@ -67,7 +67,7 @@ class PkoRestClient implements PkoClient {
     public PkoSuccessfulLoginResult inputOpt(PkoOtpInput otpInput) {
         try {
             var call = retrofitClient.inputOtp(
-                otpInput.loginFlow().internalSessionId().value(),
+                otpInput.loginFlow().pkoSessionId().value(),
                 PkoRequest.pkoOtpRequest(
                     otpInput.loginFlow().flowId().value(),
                     otpInput.loginFlow().token().value(),
@@ -76,7 +76,7 @@ class PkoRestClient implements PkoClient {
             );
             var response = call.execute();
             return new PkoSuccessfulLoginResult(
-                new SessionId(response.headers().get(SESSION_HEADER)),
+                new PkoSessionId(response.headers().get(PKO_SESSION_HEADER)),
                 new PkoSuccessfulLoginAssertionData(
                     response.body().state_id,
                     response.body().finished

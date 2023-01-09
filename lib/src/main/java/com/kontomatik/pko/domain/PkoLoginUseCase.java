@@ -21,7 +21,7 @@ class PkoLoginUseCase {
         assertPasswordResult(inputPasswordResult);
 
         return new LoginInProgressPkoSession(
-            inputPasswordResult.loginFlow().internalSessionId(),
+            inputPasswordResult.loginFlow().pkoSessionId(),
             inputPasswordResult.loginFlow().flowId(),
             inputPasswordResult.loginFlow().token()
         );
@@ -30,7 +30,7 @@ class PkoLoginUseCase {
     LoggedInPkoSession inputOtp(LoginInProgressPkoSession inProgressLoginSession, Otp otp) {
         var inputOtpResult = pkoClient.inputOpt(new PkoClient.PkoOtpInput(
             new PkoClient.PkoInProgressLoginFlow(
-                inProgressLoginSession.sessionId(),
+                inProgressLoginSession.pkoSessionId(),
                 inProgressLoginSession.flowId(),
                 inProgressLoginSession.token()
             ),

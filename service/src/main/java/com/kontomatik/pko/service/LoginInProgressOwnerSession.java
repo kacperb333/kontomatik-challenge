@@ -1,12 +1,13 @@
 package com.kontomatik.pko.service;
 
 import com.kontomatik.pko.domain.FlowId;
-import com.kontomatik.pko.domain.SessionId;
+import com.kontomatik.pko.domain.PkoSessionId;
 import com.kontomatik.pko.domain.Token;
 
 public record LoginInProgressOwnerSession(
+    OwnerSessionId ownerSessionId,
     OwnerId ownerId,
-    SessionId sessionId,
+    PkoSessionId pkoSessionId,
     FlowId flowId,
     Token token
 ) {

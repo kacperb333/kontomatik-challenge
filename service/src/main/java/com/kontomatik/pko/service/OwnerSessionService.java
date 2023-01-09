@@ -7,30 +7,37 @@ import org.springframework.stereotype.Service;
 class OwnerSessionService {
 
     private final PkoScraperFacade pkoScraperFacade;
+    private final OwnerSessionIdGenerator ownerSessionIdGenerator;
     private final OwnerSessionRepository ownerSessionRepository;
 
-    public OwnerSessionService(PkoScraperFacade pkoScraperFacade, OwnerSessionRepository ownerSessionRepository) {
+    public OwnerSessionService(
+        PkoScraperFacade pkoScraperFacade,
+        OwnerSessionIdGenerator ownerSessionIdGenerator,
+        OwnerSessionRepository ownerSessionRepository
+    ) {
         this.pkoScraperFacade = pkoScraperFacade;
+        this.ownerSessionIdGenerator = ownerSessionIdGenerator;
         this.ownerSessionRepository = ownerSessionRepository;
     }
 
     public InitialOwnerSession initializeOwnerSession(OwnerId ownerId) {
-        return ownerSessionRepository.store(new InitialOwnerSession(ownerId));
+        var generatedSessionId = ownerSessionIdGenerator.generate();
+        return ownerSessionRepository.store(new InitialOwnerSession(generatedSessionId, ownerId));
     }
 
-    public LoginInProgressOwnerSession logIn(OwnerId ownerId, Credentials credentials) {
-        var loginInProgressSession = ownerSessionRepository.fetchInitialOwnerSession(ownerId)
+    public LoginInProgressOwnerSession logIn(OwnerSessionId ownerSessionId, Credentials credentials) {
+        var loginInProgressSession = ownerSessionRepository.fetchInitialOwnerSession(ownerSessionId)
             .map(initialOwnerSession -> {
                 var inProgressPkoSession = pkoScraperFacade.logIn(credentials);
                 return asLogInInProgressOwnerSession(inProgressPkoSession, initialOwnerSession);
             })
-            .orElseThrow(() -> new OwnerSessionNotInitialized(ownerId));
+            .orElseThrow(() -> new OwnerSessionNotInitialized(ownerSessionId));
 
         return ownerSessionRepository.store(loginInProgressSession);
     }
 
-    public LoggedInOwnerSession inputOtp(OwnerId ownerId, Otp otp) {
-        var loggedInSession = ownerSessionRepository.fetchLoginInProgressOwnerSession(ownerId)
+    public LoggedInOwnerSession inputOtp(OwnerSessionId ownerSessionId, Otp otp) {
+        var loggedInSession = ownerSessionRepository.fetchLoginInProgressOwnerSession(ownerSessionId)
             .map(inProgressOwnerSession -> {
                 var loggedInPkoSession = pkoScraperFacade.inputOtp(
                     asLoginInProgressPkoSession(inProgressOwnerSession),
@@ -38,7 +45,7 @@ class OwnerSessionService {
                 );
                 return asLoggedInOwnerSession(loggedInPkoSession, inProgressOwnerSession);
             })
-            .orElseThrow(() -> new OwnerSessionLoginNotInProgress(ownerId));
+            .orElseThrow(() -> new OwnerSessionLoginNotInProgress(ownerSessionId));
 
         return ownerSessionRepository.store(loggedInSession);
     }
@@ -48,8 +55,9 @@ class OwnerSessionService {
         InitialOwnerSession initialOwnerSession
     ) {
         return new LoginInProgressOwnerSession(
+            initialOwnerSession.ownerSessionId(),
             initialOwnerSession.ownerId(),
-            inProgressPkoSession.sessionId(),
+            inProgressPkoSession.pkoSessionId(),
             inProgressPkoSession.flowId(),
             inProgressPkoSession.token()
         );
@@ -59,7 +67,7 @@ class OwnerSessionService {
         LoginInProgressOwnerSession inProgressOwnerSession
     ) {
         return new LoginInProgressPkoSession(
-            inProgressOwnerSession.sessionId(),
+            inProgressOwnerSession.pkoSessionId(),
             inProgressOwnerSession.flowId(),
             inProgressOwnerSession.token()
         );
@@ -70,8 +78,9 @@ class OwnerSessionService {
         LoginInProgressOwnerSession inProgressOwnerSession
     ) {
         return new LoggedInOwnerSession(
+            inProgressOwnerSession.ownerSessionId(),
             inProgressOwnerSession.ownerId(),
-            loggedInPkoSession.sessionId()
+            loggedInPkoSession.pkoSessionId()
         );
     }
 }

@@ -1,10 +1,10 @@
 package com.kontomatik.pko.service;
 
 public class OwnerSessionNotLoggedIn extends RuntimeException {
-    public OwnerId ownerId;
+    public OwnerSessionId ownerSessionId;
 
-    public OwnerSessionNotLoggedIn(OwnerId ownerId) {
-        super(String.format("Owner's ('%s') session has not been logged in", ownerId.value()));
-        this.ownerId = ownerId;
+    public OwnerSessionNotLoggedIn(OwnerSessionId ownerSessionId) {
+        super(String.format("Owner session [%s] has not been logged in", ownerSessionId.value()));
+        this.ownerSessionId = ownerSessionId;
     }
 }

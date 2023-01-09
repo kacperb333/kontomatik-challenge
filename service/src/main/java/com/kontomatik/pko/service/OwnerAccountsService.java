@@ -17,13 +17,13 @@ class OwnerAccountsService {
     }
 
     //TODO asynchronise
-    public AccountsInfo fetchOwnerAccountsInfo(OwnerId ownerId) {
-        return ownerSessionRepository.fetchLoggedInOwnerSession(ownerId)
+    public AccountsInfo fetchOwnerAccountsInfo(OwnerSessionId ownerSessionId) {
+        return ownerSessionRepository.fetchLoggedInOwnerSession(ownerSessionId)
             .map(loggedInOwnerSession -> pkoScraperFacade.fetchAccountsInfo(asLoggedInPkoSession(loggedInOwnerSession)))
-            .orElseThrow(() -> new OwnerSessionNotLoggedIn(ownerId));
+            .orElseThrow(() -> new OwnerSessionNotLoggedIn(ownerSessionId));
     }
 
     private static LoggedInPkoSession asLoggedInPkoSession(LoggedInOwnerSession loggedInOwnerSession) {
-        return new LoggedInPkoSession(loggedInOwnerSession.sessionId());
+        return new LoggedInPkoSession(loggedInOwnerSession.pkoSessionId());
     }
 }

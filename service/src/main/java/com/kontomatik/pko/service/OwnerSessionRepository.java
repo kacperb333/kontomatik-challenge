@@ -9,9 +9,9 @@ public interface OwnerSessionRepository {
 
     LoggedInOwnerSession store(LoggedInOwnerSession loggedInOwnerSession);
 
-    Optional<InitialOwnerSession> fetchInitialOwnerSession(OwnerId ownerId);
+    Optional<InitialOwnerSession> fetchInitialOwnerSession(OwnerSessionId ownerId);
 
-    Optional<LoginInProgressOwnerSession> fetchLoginInProgressOwnerSession(OwnerId ownerId);
+    Optional<LoginInProgressOwnerSession> fetchLoginInProgressOwnerSession(OwnerSessionId ownerId);
 
-    Optional<LoggedInOwnerSession> fetchLoggedInOwnerSession(OwnerId ownerId);
+    Optional<LoggedInOwnerSession> fetchLoggedInOwnerSession(OwnerSessionId ownerId);
 }
