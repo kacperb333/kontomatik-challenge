@@ -62,7 +62,7 @@ public class PkoRestClient implements PkoClient {
     }
 
     @Override
-    public PkoSuccessfulLoginResult inputOpt(PkoOtpInput otpInput) {
+    public PkoSuccessfulLoginResult inputOtp(PkoOtpInput otpInput) {
         try {
             var call = retrofitClient.inputOtp(
                 otpInput.loginFlow().pkoSessionId().value(),
@@ -89,7 +89,7 @@ public class PkoRestClient implements PkoClient {
     public AccountsInfo fetchAccounts(PkoFetchAccountsInput fetchAccountsInput) {
         try {
             var call = retrofitClient.fetchAccounts(
-                fetchAccountsInput.internalSessionId().value(),
+                fetchAccountsInput.pkoSessionId().value(),
                 PkoRequest.pkoFetchAccountsRequest()
             );
             var response = call.execute();
@@ -179,14 +179,14 @@ public class PkoRestClient implements PkoClient {
         PkoFetchAccountsOptions accounts
     ) {
         static PkoFetchAccountsData defaultOptions() {
-            return new PkoFetchAccountsData(PkoFetchAccountsOptions.forceSynchronize());
+            return new PkoFetchAccountsData(PkoFetchAccountsOptions.forceSynchronization());
         }
     }
 
     public record PkoFetchAccountsOptions(
-        Boolean force_synchronize
+        Boolean force_synchronization
     ) {
-        static PkoFetchAccountsOptions forceSynchronize() {
+        static PkoFetchAccountsOptions forceSynchronization() {
             return new PkoFetchAccountsOptions(true);
         }
     }

@@ -28,7 +28,7 @@ public class PkoLoginUseCase {
     }
 
     public LoggedInPkoSession inputOtp(LoginInProgressPkoSession inProgressLoginSession, Otp otp) {
-        var inputOtpResult = pkoClient.inputOpt(new PkoClient.PkoOtpInput(
+        var inputOtpResult = pkoClient.inputOtp(new PkoClient.PkoOtpInput(
             new PkoClient.PkoLoginInProgressFlow(
                 inProgressLoginSession.pkoSessionId(),
                 inProgressLoginSession.flowId(),
@@ -38,7 +38,7 @@ public class PkoLoginUseCase {
         ));
         assertOtpResult(inputOtpResult);
 
-        return new LoggedInPkoSession(inputOtpResult.internalSessionId());
+        return new LoggedInPkoSession(inputOtpResult.pkoSessionId());
     }
 
     private void assertUserNameResult(PkoClient.PkoInProgressLoginResult result) {

@@ -5,7 +5,7 @@ public interface PkoClient {
 
     PkoInProgressLoginResult inputPassword(PkoPasswordInput passwordInput);
 
-    PkoSuccessfulLoginResult inputOpt(PkoOtpInput otpInput);
+    PkoSuccessfulLoginResult inputOtp(PkoOtpInput otpInput);
 
     AccountsInfo fetchAccounts(PkoFetchAccountsInput fetchAccountsInput);
 
@@ -33,7 +33,7 @@ public interface PkoClient {
     }
 
     record PkoSuccessfulLoginResult(
-        PkoSessionId internalSessionId,
+        PkoSessionId pkoSessionId,
         PkoSuccessfulLoginAssertionData assertionData
     ) {
     }
@@ -57,7 +57,7 @@ public interface PkoClient {
     }
 
     record PkoFetchAccountsInput(
-        PkoSessionId internalSessionId
+        PkoSessionId pkoSessionId
     ) {
     }
 

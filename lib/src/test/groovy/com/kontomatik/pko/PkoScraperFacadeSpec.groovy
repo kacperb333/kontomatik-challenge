@@ -68,7 +68,7 @@ class PkoScraperFacadeSpec extends Specification {
         PkoClient.PkoLoginInProgressFlow assumedInProgressLoginFlow = GENERIC_LOGIN_IN_PROGRESS_FLOW
 
         and:
-        pkoClient.inputOpt(new PkoClient.PkoOtpInput(assumedInProgressLoginFlow, "69240")) >>
+        pkoClient.inputOtp(new PkoClient.PkoOtpInput(assumedInProgressLoginFlow, "69240")) >>
             new PkoClient.PkoSuccessfulLoginResult(
                 new PkoSessionId("test-pko-session-id"),
                 EXPECTED_OTP_ASSERTION_DATA
@@ -161,7 +161,7 @@ class PkoScraperFacadeSpec extends Specification {
 
     def "should throw UnexpectedAction when otp flow does not go according to plan"() {
         given:
-        pkoClient.inputOpt(new PkoClient.PkoOtpInput(GENERIC_LOGIN_IN_PROGRESS_FLOW, "69240")) >>
+        pkoClient.inputOtp(new PkoClient.PkoOtpInput(GENERIC_LOGIN_IN_PROGRESS_FLOW, "69240")) >>
             new PkoClient.PkoSuccessfulLoginResult(
                 GENERIC_PKO_SESSION_ID,
                 new PkoClient.PkoSuccessfulLoginAssertionData("unexpected-otp-state-id", false)
