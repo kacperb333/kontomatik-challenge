@@ -20,13 +20,13 @@ class InMemoryAccountsImportRepository implements AccountsImportRepository {
     }
 
     @Override
-    public Optional<AccountsImport> fetchNewerThan(AccountsImportId accountsImportId, Instant maxTime) {
+    public Optional<AccountsImport> fetchOneNewerThan(AccountsImportId accountsImportId, Instant maxTime) {
         return Optional.ofNullable(imports.get(accountsImportId))
             .filter(it -> it.createdAt().isAfter(maxTime));
     }
 
     @Override
-    public List<AccountsImport> fetchAllNewerThan(OwnerId ownerId, Instant maxTime) {
+    public List<AccountsImport> fetchAllForOwnerNewerThan(OwnerId ownerId, Instant maxTime) {
         return imports.values().stream()
             .filter(it -> it.ownerId().equals(ownerId))
             .filter(it -> it.createdAt().isAfter(maxTime))

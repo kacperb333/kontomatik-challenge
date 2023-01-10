@@ -42,12 +42,12 @@ public class OwnerAccountsService {
 
     public Optional<AccountsImport> fetchSingleImport(AccountsImportId accountsImportId) {
         var importMaxTime = dateTimeProvider.now().minus(IMPORT_AVAILABILITY_DURATION);
-        return accountImportRepository.fetchNewerThan(accountsImportId, importMaxTime);
+        return accountImportRepository.fetchOneNewerThan(accountsImportId, importMaxTime);
     }
 
     public List<AccountsImport> fetchAllImportsForOwner(OwnerId ownerId) {
         var importMaxTime = dateTimeProvider.now().minus(IMPORT_AVAILABILITY_DURATION);
-        return accountImportRepository.fetchAllNewerThan(ownerId, importMaxTime).stream()
+        return accountImportRepository.fetchAllForOwnerNewerThan(ownerId, importMaxTime).stream()
             .toList();
     }
 

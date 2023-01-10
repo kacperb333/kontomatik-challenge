@@ -5,9 +5,9 @@ import java.time.Instant;
 public record AccountsImport(
     AccountsImportId accountsImportId,
     OwnerId ownerId,
-    AccountsInfo accountsInfo,
     Status status,
-    Instant createdAt
+    Instant createdAt,
+    AccountsInfo accountsInfo
 ) {
     static AccountsImport inProgress(
         AccountsImportId accountsImportId,
@@ -17,9 +17,9 @@ public record AccountsImport(
         return new AccountsImport(
             accountsImportId,
             ownerId,
-            AccountsInfo.EMPTY,
             Status.IN_PROGRESS,
-            createdAt
+            createdAt,
+            AccountsInfo.EMPTY
         );
     }
 
@@ -32,9 +32,9 @@ public record AccountsImport(
         return new AccountsImport(
             accountsImportId,
             ownerId,
-            accountsInfo,
             Status.SUCCESS,
-            createdAt
+            createdAt,
+            accountsInfo
         );
     }
 
@@ -46,9 +46,9 @@ public record AccountsImport(
         return new AccountsImport(
             accountsImportId,
             ownerId,
-            AccountsInfo.EMPTY,
             Status.FAILED,
-            createdAt
+            createdAt,
+            AccountsInfo.EMPTY
         );
     }
 

@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface AccountsImportRepository {
     AccountsImport store(AccountsImport accountsImport);
 
-    Optional<AccountsImport> fetchNewerThan(AccountsImportId accountsImportId, Instant maxTime);
+    Optional<AccountsImport> fetchOneNewerThan(AccountsImportId accountsImportId, Instant maxTime);
 
-    List<AccountsImport> fetchAllNewerThan(OwnerId ownerId, Instant maxTime);
+    List<AccountsImport> fetchAllForOwnerNewerThan(OwnerId ownerId, Instant maxTime);
 }
