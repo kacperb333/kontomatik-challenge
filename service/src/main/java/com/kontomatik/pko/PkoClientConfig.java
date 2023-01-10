@@ -1,6 +1,5 @@
 package com.kontomatik.pko;
 
-import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import retrofit2.Retrofit;
@@ -9,13 +8,10 @@ import retrofit2.Retrofit;
 public class PkoClientConfig {
 
     @Bean
-    OkHttpClient okHttpClient() {
-        return PkoRetrofitClientFactory.defaultOkHttp();
-    }
-
-    @Bean
-    Retrofit retrofit(OkHttpClient okHttpClient) {
-        return PkoRetrofitClientFactory.defaultRetrofit(okHttpClient);
+    Retrofit retrofit() {
+        return PkoRetrofitClientFactory.defaultRetrofit(
+            PkoRetrofitClientFactory.defaultOkHttp()
+        );
     }
 
     @Bean
