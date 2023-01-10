@@ -54,7 +54,7 @@ class PkoScraperController {
             .body(new OwnerIdResponse(inputOtpResult.ownerId().value()));
     }
 
-    @PostMapping("/owner/accounts")
+    @PostMapping("/import")
     ResponseEntity<ImportAccountsResponse> importAccounts(
         @RequestHeader(OWNER_SESSION_HEADER) OwnerSessionId ownerSessionId
     ) {
@@ -64,9 +64,17 @@ class PkoScraperController {
             .body(new ImportAccountsResponse(scheduleImportResult.accountsImportId().value()));
     }
 
-    @GetMapping("/imports")
-    ResponseEntity<AccountsInfoResponse> fetchAccountsInfo(@RequestParam AccountsImportId accountsImportId) {
+    @GetMapping("/import")
+    ResponseEntity<AccountsInfoResponse> fetchSingleImport(@RequestParam AccountsImportId accountsImportId) {
         return ownerAccountsService.fetchSingleImport(accountsImportId)
+            .map(it -> new AccountsInfoResponse(it.accounts()))
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/imports")
+    ResponseEntity<AccountsInfoResponse> fetchAllImports(@RequestParam OwnerId ownerId) {
+        return ownerAccountsService.fetchAllImportsForOwner(ownerId)
             .map(it -> new AccountsInfoResponse(it.accounts()))
             .map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());

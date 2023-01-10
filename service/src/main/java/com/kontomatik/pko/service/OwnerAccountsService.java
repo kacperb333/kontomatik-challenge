@@ -1,12 +1,10 @@
 package com.kontomatik.pko.service;
 
-import com.kontomatik.pko.domain.AccountInfo;
 import com.kontomatik.pko.domain.AccountsInfo;
 import com.kontomatik.pko.domain.LoggedInPkoSession;
 import com.kontomatik.pko.domain.PkoScraperFacade;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
@@ -41,12 +39,12 @@ class OwnerAccountsService {
             .map(AccountsImport::accountsInfo);
     }
 
-    public AccountsInfo fetchAllReportsForOwner(OwnerId ownerId) {
+    public Optional<AccountsInfo> fetchAllImportsForOwner(OwnerId ownerId) {
         var mergedAccountInfos = accountImportRepository.fetchAll(ownerId).stream()
             .flatMap(it -> it.accountsInfo().accounts().stream())
             .toList();
 
-        return new AccountsInfo(mergedAccountInfos);
+        return Optional.of(new AccountsInfo(mergedAccountInfos));
     }
 
     private ScheduledAccountsImport doScheduleForOwner(LoggedInOwnerSession loggedInOwnerSession) {
