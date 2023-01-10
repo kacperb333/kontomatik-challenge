@@ -6,6 +6,7 @@ import com.kontomatik.pko.service.AccountsImportRepository;
 import com.kontomatik.pko.service.OwnerId;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,14 +24,16 @@ public class InMemoryAccountsImportRepository implements AccountsImportRepositor
     }
 
     @Override
-    public Optional<AccountsImport> fetch(AccountsImportId accountsImportId) {
-        return Optional.ofNullable(imports.get(accountsImportId));
+    public Optional<AccountsImport> fetchNewerThan(AccountsImportId accountsImportId, Instant maxTime) {
+        return Optional.ofNullable(imports.get(accountsImportId))
+            .filter(it -> it.createdAt().isAfter(maxTime));
     }
 
     @Override
-    public List<AccountsImport> fetchAll(OwnerId ownerId) {
+    public List<AccountsImport> fetchAllNewerThan(OwnerId ownerId, Instant maxTime) {
         return imports.values().stream()
             .filter(it -> it.ownerId().equals(ownerId))
+            .filter(it -> it.createdAt().isAfter(maxTime))
             .toList();
     }
 }

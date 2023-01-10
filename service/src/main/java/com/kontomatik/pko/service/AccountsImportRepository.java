@@ -1,12 +1,13 @@
 package com.kontomatik.pko.service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 public interface AccountsImportRepository {
     AccountsImport store(AccountsImport accountsImport);
 
-    Optional<AccountsImport> fetch(AccountsImportId accountsImportId);
+    Optional<AccountsImport> fetchNewerThan(AccountsImportId accountsImportId, Instant maxTime);
 
-    List<AccountsImport> fetchAll(OwnerId ownerId);
+    List<AccountsImport> fetchAllNewerThan(OwnerId ownerId, Instant maxTime);
 }

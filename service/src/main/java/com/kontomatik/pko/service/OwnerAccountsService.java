@@ -5,6 +5,7 @@ import com.kontomatik.pko.domain.LoggedInPkoSession;
 import com.kontomatik.pko.domain.PkoScraperFacade;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
@@ -15,17 +16,22 @@ class OwnerAccountsService {
     private final AccountsImportIdGenerator accountsImportIdGenerator;
     private final OwnerSessionRepository ownerSessionRepository;
     private final AccountsImportRepository accountImportRepository;
+    private final DateTimeProvider dateTimeProvider;
+
+    private static final Duration IMPORT_AVAILABILITY_DURATION = Duration.ofHours(24);
 
     public OwnerAccountsService(
         PkoScraperFacade pkoScraperFacade,
         AccountsImportIdGenerator accountsImportIdGenerator,
         OwnerSessionRepository ownerSessionRepository,
-        AccountsImportRepository accountImportRepository
+        AccountsImportRepository accountImportRepository,
+        DateTimeProvider dateTimeProvider
     ) {
         this.pkoScraperFacade = pkoScraperFacade;
         this.accountsImportIdGenerator = accountsImportIdGenerator;
         this.ownerSessionRepository = ownerSessionRepository;
         this.accountImportRepository = accountImportRepository;
+        this.dateTimeProvider = dateTimeProvider;
     }
 
     public ScheduledAccountsImport scheduleFetchOwnerAccountsInfo(OwnerSessionId ownerSessionId) {
@@ -35,12 +41,14 @@ class OwnerAccountsService {
     }
 
     public Optional<AccountsInfo> fetchSingleImport(AccountsImportId accountsImportId) {
-        return accountImportRepository.fetch(accountsImportId)
+        var importMaxTime = dateTimeProvider.now().minus(IMPORT_AVAILABILITY_DURATION);
+        return accountImportRepository.fetchNewerThan(accountsImportId, importMaxTime)
             .map(AccountsImport::accountsInfo);
     }
 
     public Optional<AccountsInfo> fetchAllImportsForOwner(OwnerId ownerId) {
-        var mergedAccountInfos = accountImportRepository.fetchAll(ownerId).stream()
+        var importMaxTime = dateTimeProvider.now().minus(IMPORT_AVAILABILITY_DURATION);
+        var mergedAccountInfos = accountImportRepository.fetchAllNewerThan(ownerId, importMaxTime).stream()
             .flatMap(it -> it.accountsInfo().accounts().stream())
             .toList();
 
@@ -54,7 +62,8 @@ class OwnerAccountsService {
             var importResult = new AccountsImport(
                 accountsImportId,
                 loggedInOwnerSession.ownerId(),
-                accountsInfo
+                accountsInfo,
+                dateTimeProvider.now()
             );
             accountImportRepository.store(importResult);
         };
