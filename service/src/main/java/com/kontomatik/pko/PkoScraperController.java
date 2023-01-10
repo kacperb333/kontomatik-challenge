@@ -1,6 +1,5 @@
 package com.kontomatik.pko;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,18 +12,25 @@ public class PkoScraperController {
     private final OwnerSessionService ownerSessionService;
     private final OwnerAccountsService ownerAccountsService;
 
+    private final OwnerSessionHeaderProvider ownerSessionHeaderProvider;
+
     private static final String OWNER_SESSION_HEADER = "x-owner-session";
 
-    public PkoScraperController(OwnerSessionService ownerSessionService, OwnerAccountsService ownerAccountsService) {
+    public PkoScraperController(
+        OwnerSessionService ownerSessionService,
+        OwnerAccountsService ownerAccountsService,
+        OwnerSessionHeaderProvider ownerSessionHeaderProvider
+    ) {
         this.ownerSessionService = ownerSessionService;
         this.ownerAccountsService = ownerAccountsService;
+        this.ownerSessionHeaderProvider = ownerSessionHeaderProvider;
     }
 
     @PostMapping("/owner")
     ResponseEntity<OwnerIdResponse> initializeSession(@RequestParam OwnerId ownerId) {
         var initialSession = ownerSessionService.initializeOwnerSession(ownerId);
         return ResponseEntity.ok()
-            .headers(ownerSessionId(initialSession.ownerSessionId()))
+            .headers(ownerSessionHeaderProvider.ownerSessionHeader(initialSession.ownerSessionId()))
             .body(new OwnerIdResponse(initialSession.ownerId().value()));
     }
 
@@ -35,7 +41,7 @@ public class PkoScraperController {
     ) {
         var logInResult = ownerSessionService.logIn(ownerSessionId, request.credentials());
         return ResponseEntity.ok()
-            .headers(ownerSessionId(logInResult.ownerSessionId()))
+            .headers(ownerSessionHeaderProvider.ownerSessionHeader(logInResult.ownerSessionId()))
             .body(new OwnerIdResponse(logInResult.ownerId().value()));
     }
 
@@ -47,7 +53,7 @@ public class PkoScraperController {
     ) {
         var inputOtpResult = ownerSessionService.inputOtp(ownerSessionId, request.otp());
         return ResponseEntity.ok()
-            .headers(ownerSessionId(inputOtpResult.ownerSessionId()))
+            .headers(ownerSessionHeaderProvider.ownerSessionHeader(inputOtpResult.ownerSessionId()))
             .body(new OwnerIdResponse(inputOtpResult.ownerId().value()));
     }
 
@@ -57,30 +63,33 @@ public class PkoScraperController {
     ) {
         var scheduleImportResult = ownerAccountsService.scheduleFetchOwnerAccountsInfo(ownerSessionId);
         return ResponseEntity.accepted()
-            .headers(ownerSessionId(scheduleImportResult.ownerSessionId()))
+            .headers(ownerSessionHeaderProvider.ownerSessionHeader(scheduleImportResult.ownerSessionId()))
             .body(new ImportAccountsResponse(scheduleImportResult.accountsImportId().value()));
     }
 
     @GetMapping("/import")
     ResponseEntity<AccountsInfoResponse> fetchSingleImport(@RequestParam AccountsImportId accountsImportId) {
         return ownerAccountsService.fetchSingleImport(accountsImportId)
-            .map(it -> new AccountsInfoResponse(it.accounts()))
+            .map(it -> new AccountsInfoResponse(
+                it.accountsImportId().value(),
+                it.status(),
+                it.accountsInfo().accounts())
+            )
             .map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/imports")
-    ResponseEntity<AccountsInfoResponse> fetchAllImports(@RequestParam OwnerId ownerId) {
-        return ownerAccountsService.fetchAllImportsForOwner(ownerId)
-            .map(it -> new AccountsInfoResponse(it.accounts()))
-            .map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+    ResponseEntity<List<AccountsInfoResponse>> fetchAllImports(@RequestParam OwnerId ownerId) {
+        var response = ownerAccountsService.fetchAllImportsForOwner(ownerId).stream()
+            .map(it -> new AccountsInfoResponse(
+                it.accountsImportId().value(),
+                it.status(),
+                it.accountsInfo().accounts())
+            )
+            .toList();
 
-    private static HttpHeaders ownerSessionId(OwnerSessionId ownerSessionId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(OWNER_SESSION_HEADER, ownerSessionId.value());
-        return headers;
+        return ResponseEntity.ok(response);
     }
 
     private record CredentialsRequest(
@@ -104,6 +113,8 @@ public class PkoScraperController {
     }
 
     private record AccountsInfoResponse(
+        String accountsImportId,
+        AccountsImport.Status importStatus,
         List<AccountInfo> accounts
     ) {
     }

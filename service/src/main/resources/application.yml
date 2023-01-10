@@ -1,0 +1,8 @@
+pko-client:
+  base-url: https://www.ipko.pl/
+
+service:
+  owner-session-header: x-owner-session
+
+scheduler:
+  number-of-threads: 10

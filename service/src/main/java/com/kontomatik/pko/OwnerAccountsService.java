@@ -3,8 +3,8 @@ package com.kontomatik.pko;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 
 @Service
 public class OwnerAccountsService {
@@ -13,6 +13,7 @@ public class OwnerAccountsService {
     private final AccountsImportIdGenerator accountsImportIdGenerator;
     private final OwnerSessionRepository ownerSessionRepository;
     private final AccountsImportRepository accountImportRepository;
+    private final AccountsImportScheduler accountsImportScheduler;
     private final DateTimeProvider dateTimeProvider;
 
     private static final Duration IMPORT_AVAILABILITY_DURATION = Duration.ofHours(24);
@@ -22,12 +23,14 @@ public class OwnerAccountsService {
         AccountsImportIdGenerator accountsImportIdGenerator,
         OwnerSessionRepository ownerSessionRepository,
         AccountsImportRepository accountImportRepository,
+        AccountsImportScheduler accountsImportScheduler,
         DateTimeProvider dateTimeProvider
     ) {
         this.pkoScraperFacade = pkoScraperFacade;
         this.accountsImportIdGenerator = accountsImportIdGenerator;
         this.ownerSessionRepository = ownerSessionRepository;
         this.accountImportRepository = accountImportRepository;
+        this.accountsImportScheduler = accountsImportScheduler;
         this.dateTimeProvider = dateTimeProvider;
     }
 
@@ -37,43 +40,56 @@ public class OwnerAccountsService {
             .orElseThrow(() -> new OwnerSessionNotLoggedIn(ownerSessionId));
     }
 
-    public Optional<AccountsInfo> fetchSingleImport(AccountsImportId accountsImportId) {
+    public Optional<AccountsImport> fetchSingleImport(AccountsImportId accountsImportId) {
         var importMaxTime = dateTimeProvider.now().minus(IMPORT_AVAILABILITY_DURATION);
-        return accountImportRepository.fetchNewerThan(accountsImportId, importMaxTime)
-            .map(AccountsImport::accountsInfo);
+        return accountImportRepository.fetchNewerThan(accountsImportId, importMaxTime);
     }
 
-    public Optional<AccountsInfo> fetchAllImportsForOwner(OwnerId ownerId) {
+    public List<AccountsImport> fetchAllImportsForOwner(OwnerId ownerId) {
         var importMaxTime = dateTimeProvider.now().minus(IMPORT_AVAILABILITY_DURATION);
-        var mergedAccountInfos = accountImportRepository.fetchAllNewerThan(ownerId, importMaxTime).stream()
-            .flatMap(it -> it.accountsInfo().accounts().stream())
+        return accountImportRepository.fetchAllNewerThan(ownerId, importMaxTime).stream()
             .toList();
-
-        return Optional.of(new AccountsInfo(mergedAccountInfos));
     }
 
     private ScheduledAccountsImport doScheduleForOwner(LoggedInOwnerSession loggedInOwnerSession) {
         var accountsImportId = accountsImportIdGenerator.generate();
-        Runnable importTask = () -> {
+        Runnable importTask = () -> importAccounts(accountsImportId, loggedInOwnerSession);
+        accountsImportScheduler.submitTask(importTask);
+
+        return new ScheduledAccountsImport(loggedInOwnerSession.ownerSessionId(), accountsImportId);
+    }
+
+    private void importAccounts(AccountsImportId accountsImportId, LoggedInOwnerSession loggedInOwnerSession) {
+        try {
+            markImportInProgress(accountsImportId, loggedInOwnerSession);
+
+            Thread.sleep(20000);
+
             var accountsInfo = pkoScraperFacade.fetchAccountsInfo(asLoggedInPkoSession(loggedInOwnerSession));
-            var importResult = new AccountsImport(
+            var importResult = AccountsImport.success(
                 accountsImportId,
                 loggedInOwnerSession.ownerId(),
                 accountsInfo,
                 dateTimeProvider.now()
             );
             accountImportRepository.store(importResult);
-        };
-        submitTask(importTask);
+        } catch (Exception e) {
+            //TODO logging
+            System.out.println(e.getMessage());
+            var failedResult = AccountsImport.failure(accountsImportId,
+                loggedInOwnerSession.ownerId(),
+                dateTimeProvider.now()
+            );
+            accountImportRepository.store(failedResult);
+        }
+    }
 
-        return new ScheduledAccountsImport(loggedInOwnerSession.ownerSessionId(), accountsImportId);
+    private void markImportInProgress(AccountsImportId accountsImportId, LoggedInOwnerSession loggedInOwnerSession) {
+        accountImportRepository.store(
+            AccountsImport.inProgress(accountsImportId, loggedInOwnerSession.ownerId(), dateTimeProvider.now()));
     }
 
     private static LoggedInPkoSession asLoggedInPkoSession(LoggedInOwnerSession loggedInOwnerSession) {
         return new LoggedInPkoSession(loggedInOwnerSession.pkoSessionId());
-    }
-
-    private static void submitTask(Runnable task) {
-        Executors.newSingleThreadExecutor().submit(task);
     }
 }

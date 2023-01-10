@@ -16,9 +16,9 @@ public class PkoRetrofitClientFactory {
             .build();
     }
 
-    public static Retrofit defaultRetrofit(OkHttpClient okHttpClient) {
+    public static Retrofit defaultRetrofit(OkHttpClient okHttpClient, String baseUrl) {
         return new Retrofit.Builder()
-            .baseUrl("https://www.ipko.pl/")
+            .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build();
