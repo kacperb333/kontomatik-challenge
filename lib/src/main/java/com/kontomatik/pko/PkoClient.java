@@ -52,7 +52,7 @@ public interface PkoClient {
 
     record PkoSuccessfulLoginAssertionData(
         String stateId,
-        Boolean finished
+        boolean finished
     ) {
     }
 

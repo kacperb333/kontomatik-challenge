@@ -184,7 +184,7 @@ public class PkoRestClient implements PkoClient {
     }
 
     public record PkoFetchAccountsOptions(
-        Boolean force_synchronization
+        boolean force_synchronization
     ) {
         static PkoFetchAccountsOptions forceSynchronization() {
             return new PkoFetchAccountsOptions(true);

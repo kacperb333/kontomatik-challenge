@@ -7,7 +7,8 @@ public record AccountsImport(
     OwnerId ownerId,
     Status status,
     Instant createdAt,
-    AccountsInfo accountsInfo
+    AccountsInfo accountsInfo,
+    Details details
 ) {
     static AccountsImport inProgress(
         AccountsImportId accountsImportId,
@@ -19,7 +20,8 @@ public record AccountsImport(
             ownerId,
             Status.IN_PROGRESS,
             createdAt,
-            AccountsInfo.EMPTY
+            AccountsInfo.EMPTY,
+            Details.EMPTY
         );
     }
 
@@ -34,25 +36,37 @@ public record AccountsImport(
             ownerId,
             Status.SUCCESS,
             createdAt,
-            accountsInfo
+            accountsInfo,
+            Details.EMPTY
         );
     }
 
     static AccountsImport failure(
         AccountsImportId accountsImportId,
         OwnerId ownerId,
-        Instant createdAt
+        Instant createdAt,
+        Details details
     ) {
         return new AccountsImport(
             accountsImportId,
             ownerId,
             Status.FAILED,
             createdAt,
-            AccountsInfo.EMPTY
+            AccountsInfo.EMPTY,
+            details
         );
     }
 
     enum Status {
         IN_PROGRESS, SUCCESS, FAILED
+    }
+
+    record Details(
+        String value
+    ) {
+        static final Details EMPTY = new Details(null);
+        static Details ofMessage(String message) {
+            return new Details(message);
+        }
     }
 }

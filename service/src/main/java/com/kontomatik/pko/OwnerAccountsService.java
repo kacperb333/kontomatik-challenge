@@ -78,7 +78,8 @@ public class OwnerAccountsService {
             System.out.println(e.getMessage());
             var failedResult = AccountsImport.failure(accountsImportId,
                 loggedInOwnerSession.ownerId(),
-                dateTimeProvider.now()
+                dateTimeProvider.now(),
+                AccountsImport.Details.ofMessage(e.getMessage())
             );
             accountImportRepository.store(failedResult);
         }

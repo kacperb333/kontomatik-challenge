@@ -1,6 +1,7 @@
 package com.kontomatik.pko;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class PkoLoginUseCase {
 
@@ -45,7 +46,10 @@ public class PkoLoginUseCase {
         genericAssertForStep(
             "username",
             List.of(
-                new AssertionPredicate<>("State ID", "password", result.assertionData().stateId())
+                new AssertionPredicate("State ID", () -> "password".equals(result.assertionData().stateId())),
+                new AssertionPredicate("Flow ID", () -> result.loginFlow().flowId() != null),
+                new AssertionPredicate("Token", () -> result.loginFlow().token() != null),
+                new AssertionPredicate("PKO Session ID", () -> result.loginFlow().pkoSessionId() != null)
             )
         );
     }
@@ -54,7 +58,10 @@ public class PkoLoginUseCase {
         genericAssertForStep(
             "password",
             List.of(
-                new AssertionPredicate<>("State ID", "one_time_password", result.assertionData().stateId())
+                new AssertionPredicate("State ID", () -> "one_time_password".equals(result.assertionData().stateId())),
+                new AssertionPredicate("Flow ID", () -> result.loginFlow().flowId() != null),
+                new AssertionPredicate("Token", () -> result.loginFlow().token() != null),
+                new AssertionPredicate("PKO Session ID", () -> result.loginFlow().pkoSessionId() != null)
             )
         );
     }
@@ -63,13 +70,14 @@ public class PkoLoginUseCase {
         genericAssertForStep(
             "otp",
             List.of(
-                new AssertionPredicate<>("State ID", "END", result.assertionData().stateId()),
-                new AssertionPredicate<>("Finished", true, result.assertionData().finished())
+                new AssertionPredicate("State ID", () -> "END".equals(result.assertionData().stateId())),
+                new AssertionPredicate("Finished", () -> result.assertionData().finished()),
+                new AssertionPredicate("PKO Session ID", () -> result.pkoSessionId() != null)
             )
         );
     }
 
-    private <T> void genericAssertForStep(String lastStep, List<AssertionPredicate<T>> predicates) {
+    private void genericAssertForStep(String lastStep, List<AssertionPredicate> predicates) {
         var assertionResults = predicates.stream()
             .map(AssertionPredicate::doAssert)
             .toList();
@@ -79,27 +87,27 @@ public class PkoLoginUseCase {
         }
     }
 
-    private record AssertionPredicate<T>(String name, T expected, T toCheck) {
+    private record AssertionPredicate(String name, Supplier<Boolean> predicate) {
         AssertionResult doAssert() {
-            if (expected.equals(toCheck)) {
-                return new Success<>(name, expected);
+            if (predicate.get()) {
+                return new Success(name);
             } else {
-                return new Fail<>(name, expected, toCheck);
+                return new Fail(name);
             }
         }
     }
 
-    record Success<T>(String name, T expected) implements AssertionResult {
+    record Success(String name) implements AssertionResult {
         @Override
         public String message() {
-            return String.format("Successful step [%s], value as expected [%s]", name, expected);
+            return String.format("Successful step [%s], value as expected.", name);
         }
     }
 
-    record Fail<T>(String name, T expected, T actual) implements AssertionResult {
+    record Fail(String name) implements AssertionResult {
         @Override
         public String message() {
-            return String.format("Failed step [%s], expected value [%s], but got [%s]", name, expected, actual);
+            return String.format("Failed step [%s], value does not hold required predicate", name);
         }
     }
 

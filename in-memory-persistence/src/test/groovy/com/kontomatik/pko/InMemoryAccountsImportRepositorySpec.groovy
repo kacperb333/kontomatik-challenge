@@ -26,7 +26,8 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
             importCreatedTime,
             new AccountsInfo([
                 new AccountInfo("test-account", "1221.21", "PLN")
-            ])
+            ]),
+            AccountsImport.Details.EMPTY
         )
         AccountsImport differentImport = new AccountsImport(
             new AccountsImportId("different-import-id"),
@@ -35,7 +36,8 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
             importCreatedTime,
             new AccountsInfo([
                 new AccountInfo("different-account", "2221.21", "EUR")
-            ])
+            ]),
+            AccountsImport.Details.EMPTY
         )
 
         and:
@@ -76,7 +78,8 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
             importCreatedTime,
             new AccountsInfo([
                 new AccountInfo("test-account-1", "1221.21", "PLN")
-            ])
+            ]),
+            AccountsImport.Details.EMPTY
         )
         AccountsImport import2 = new AccountsImport(
             new AccountsImportId("test-import-id-2"),
@@ -86,7 +89,8 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
             new AccountsInfo([
                 new AccountInfo("test-account-2", "2221.21", "EUR"),
                 new AccountInfo("test-account-3", "3221.21", "USD")
-            ])
+            ]),
+            AccountsImport.Details.EMPTY
         )
         AccountsImport importOfDifferentOwner = new AccountsImport(
             new AccountsImportId("test-import-id-3"),
@@ -96,7 +100,8 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
             new AccountsInfo([
                 new AccountInfo("different-account-1", "2221.21", "EUR"),
                 new AccountInfo("different-account-2", "3221.21", "USD")
-            ])
+            ]),
+            AccountsImport.Details.EMPTY
         )
 
         and:
@@ -276,7 +281,8 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
             createdAt,
             new AccountsInfo([
                 new AccountInfo("some-account", "1337.69", "PLN")
-            ])
+            ]),
+            AccountsImport.Details.EMPTY
         )
     }
 }

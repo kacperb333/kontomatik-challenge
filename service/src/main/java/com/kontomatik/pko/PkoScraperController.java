@@ -73,7 +73,8 @@ public class PkoScraperController {
             .map(it -> new AccountsInfoResponse(
                 it.accountsImportId().value(),
                 it.status(),
-                it.accountsInfo().accounts())
+                it.accountsInfo().accounts(),
+                it.details().value())
             )
             .map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
@@ -85,7 +86,8 @@ public class PkoScraperController {
             .map(it -> new AccountsInfoResponse(
                 it.accountsImportId().value(),
                 it.status(),
-                it.accountsInfo().accounts())
+                it.accountsInfo().accounts(),
+                it.details().value())
             )
             .toList();
 
@@ -115,7 +117,8 @@ public class PkoScraperController {
     private record AccountsInfoResponse(
         String accountsImportId,
         AccountsImport.Status importStatus,
-        List<AccountInfo> accounts
+        List<AccountInfo> accounts,
+        String additionalMessage
     ) {
     }
 }
