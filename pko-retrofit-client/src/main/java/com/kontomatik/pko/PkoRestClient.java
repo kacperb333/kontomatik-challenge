@@ -20,7 +20,7 @@ public class PkoRestClient implements PkoClient {
             );
             var response = call.execute();
             return new PkoInProgressLoginResult(
-                new PkoInProgressLoginFlow(
+                new PkoLoginInProgressFlow(
                     new PkoSessionId(response.headers().get(PKO_SESSION_HEADER)),
                     new FlowId(response.body().flow_id),
                     new Token(response.body().token)
@@ -47,7 +47,7 @@ public class PkoRestClient implements PkoClient {
             );
             var response = call.execute();
             return new PkoInProgressLoginResult(
-                new PkoInProgressLoginFlow(
+                new PkoLoginInProgressFlow(
                     new PkoSessionId(response.headers().get(PKO_SESSION_HEADER)),
                     new FlowId(response.body().flow_id),
                     new Token(response.body().token)

@@ -29,7 +29,7 @@ public class PkoLoginUseCase {
 
     public LoggedInPkoSession inputOtp(LoginInProgressPkoSession inProgressLoginSession, Otp otp) {
         var inputOtpResult = pkoClient.inputOpt(new PkoClient.PkoOtpInput(
-            new PkoClient.PkoInProgressLoginFlow(
+            new PkoClient.PkoLoginInProgressFlow(
                 inProgressLoginSession.pkoSessionId(),
                 inProgressLoginSession.flowId(),
                 inProgressLoginSession.token()
@@ -43,7 +43,7 @@ public class PkoLoginUseCase {
 
     private void assertUserNameResult(PkoClient.PkoInProgressLoginResult result) {
         genericAssertForStep(
-            "password",
+            "username",
             List.of(
                 new AssertionPredicate<>("State ID", "password", result.assertionData().stateId())
             )

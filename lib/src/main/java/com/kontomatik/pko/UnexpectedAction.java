@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class UnexpectedAction extends RuntimeException {
-    private final String lastStep;
+    public final String lastStep;
     private final List<String> successful;
     private final List<String> failed;
 

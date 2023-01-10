@@ -15,19 +15,19 @@ public interface PkoClient {
     }
 
     record PkoPasswordInput(
-        PkoInProgressLoginFlow loginFlow,
+        PkoLoginInProgressFlow loginFlow,
         String password
     ) {
     }
 
     record PkoOtpInput(
-        PkoInProgressLoginFlow loginFlow,
+        PkoLoginInProgressFlow loginFlow,
         String code
     ) {
     }
 
     record PkoInProgressLoginResult(
-        PkoInProgressLoginFlow loginFlow,
+        PkoLoginInProgressFlow loginFlow,
         PkoInProgressLoginAssertionData assertionData
     ) {
     }
@@ -38,7 +38,7 @@ public interface PkoClient {
     ) {
     }
 
-    record PkoInProgressLoginFlow(
+    record PkoLoginInProgressFlow(
         PkoSessionId pkoSessionId,
         FlowId flowId,
         Token token
