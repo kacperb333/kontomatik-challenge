@@ -1,17 +1,19 @@
 package com.kontomatik.pko;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-//TODO add logging
 @ControllerAdvice
 public class PkoScraperExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(PkoScraperExceptionHandler.class);
 
     @ExceptionHandler(PkoClient.PkoClientIOException.class)
     ResponseEntity<ErrorMessage> handle(PkoClient.PkoClientIOException ex) {
-        System.out.println(ex.getMessage());
+        log.warn(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(new ErrorMessage(
                 "BANKING_SERVICE_UNAVAILABLE",
@@ -21,7 +23,7 @@ public class PkoScraperExceptionHandler {
 
     @ExceptionHandler(UnexpectedAction.class)
     ResponseEntity<ErrorMessage> handle(UnexpectedAction ex) {
-        System.out.println(ex.getMessage());
+        log.warn(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(new ErrorMessage(
                 "UNEXPECTED_ACTION",
@@ -31,7 +33,7 @@ public class PkoScraperExceptionHandler {
 
     @ExceptionHandler(OwnerSessionNotInitialized.class)
     ResponseEntity<ErrorMessage> handle(OwnerSessionNotInitialized ex) {
-        System.out.println(ex.getMessage());
+        log.warn(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(new ErrorMessage(
                 "OWNER_SESSION_NOT_INITIALIZED",
@@ -41,7 +43,7 @@ public class PkoScraperExceptionHandler {
 
     @ExceptionHandler(OwnerSessionLoginNotInProgress.class)
     ResponseEntity<ErrorMessage> handle(OwnerSessionLoginNotInProgress ex) {
-        System.out.println(ex.getMessage());
+        log.warn(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(new ErrorMessage(
                 "OWNER_SESSION_LOGIN_NOT_IN_PROGRESS",
@@ -51,7 +53,7 @@ public class PkoScraperExceptionHandler {
 
     @ExceptionHandler(OwnerSessionNotLoggedIn.class)
     ResponseEntity<ErrorMessage> handle(OwnerSessionNotLoggedIn ex) {
-        System.out.println(ex.getMessage());
+        log.warn(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(new ErrorMessage(
                 "OWNER_SESSION_NOT_LOGGED_IN",

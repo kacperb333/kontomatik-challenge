@@ -1,5 +1,7 @@
 package com.kontomatik.pko;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -8,6 +10,7 @@ import java.util.Optional;
 
 @Service
 public class OwnerAccountsService {
+    private static final Logger log = LoggerFactory.getLogger(OwnerAccountsService.class);
 
     private final PkoScraperFacade pkoScraperFacade;
     private final AccountsImportIdGenerator accountsImportIdGenerator;
@@ -74,8 +77,7 @@ public class OwnerAccountsService {
             );
             accountImportRepository.store(importResult);
         } catch (Exception e) {
-            //TODO logging
-            System.out.println(e.getMessage());
+            log.error("Encountered exception during import", e);
             var failedResult = AccountsImport.failure(accountsImportId,
                 loggedInOwnerSession.ownerId(),
                 dateTimeProvider.now(),
