@@ -25,11 +25,9 @@ public class OwnerSessionService {
     }
 
     public LoginInProgressOwnerSession logIn(OwnerSessionId ownerSessionId, Credentials credentials) {
+        ownerSessionRepository.fetchInitialOwnerSession(ownerSessionId);
         var loginInProgressSession = ownerSessionRepository.fetchInitialOwnerSession(ownerSessionId)
-            .map(initialOwnerSession -> {
-                var inProgressPkoSession = pkoScraperFacade.logIn(credentials);
-                return asLogInInProgressOwnerSession(inProgressPkoSession, initialOwnerSession);
-            })
+            .map(initialOwnerSession -> initialOwnerSession.initializeLogIn(pkoScraperFacade.logIn(credentials)))
             .orElseThrow(() -> new OwnerSessionNotInitialized(ownerSessionId));
 
         return ownerSessionRepository.store(loginInProgressSession);
@@ -37,49 +35,14 @@ public class OwnerSessionService {
 
     public LoggedInOwnerSession inputOtp(OwnerSessionId ownerSessionId, Otp otp) {
         var loggedInSession = ownerSessionRepository.fetchLoginInProgressOwnerSession(ownerSessionId)
-            .map(inProgressOwnerSession -> {
-                var loggedInPkoSession = pkoScraperFacade.inputOtp(
-                    asLoginInProgressPkoSession(inProgressOwnerSession),
+            .map(inProgressOwnerSession ->
+                inProgressOwnerSession.finishLogin(pkoScraperFacade.inputOtp(
+                    inProgressOwnerSession.asLoginInProgressPkoSession(),
                     otp
-                );
-                return asLoggedInOwnerSession(loggedInPkoSession, inProgressOwnerSession);
-            })
+                ))
+            )
             .orElseThrow(() -> new OwnerSessionLoginNotInProgress(ownerSessionId));
 
         return ownerSessionRepository.store(loggedInSession);
-    }
-
-    private static LoginInProgressOwnerSession asLogInInProgressOwnerSession(
-        LoginInProgressPkoSession inProgressPkoSession,
-        InitialOwnerSession initialOwnerSession
-    ) {
-        return new LoginInProgressOwnerSession(
-            initialOwnerSession.ownerSessionId(),
-            initialOwnerSession.ownerId(),
-            inProgressPkoSession.pkoSessionId(),
-            inProgressPkoSession.flowId(),
-            inProgressPkoSession.token()
-        );
-    }
-
-    private static LoginInProgressPkoSession asLoginInProgressPkoSession(
-        LoginInProgressOwnerSession inProgressOwnerSession
-    ) {
-        return new LoginInProgressPkoSession(
-            inProgressOwnerSession.pkoSessionId(),
-            inProgressOwnerSession.flowId(),
-            inProgressOwnerSession.token()
-        );
-    }
-
-    private static LoggedInOwnerSession asLoggedInOwnerSession(
-        LoggedInPkoSession loggedInPkoSession,
-        LoginInProgressOwnerSession inProgressOwnerSession
-    ) {
-        return new LoggedInOwnerSession(
-            inProgressOwnerSession.ownerSessionId(),
-            inProgressOwnerSession.ownerId(),
-            loggedInPkoSession.pkoSessionId()
-        );
     }
 }
