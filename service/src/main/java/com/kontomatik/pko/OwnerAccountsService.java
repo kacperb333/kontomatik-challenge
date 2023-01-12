@@ -13,8 +13,8 @@ public class OwnerAccountsService {
     private static final Logger log = LoggerFactory.getLogger(OwnerAccountsService.class);
 
     private final PkoScraperFacade pkoScraperFacade;
+    private final OwnerSessionService ownerSessionService;
     private final AccountsImportIdGenerator accountsImportIdGenerator;
-    private final OwnerSessionRepository ownerSessionRepository;
     private final AccountsImportRepository accountImportRepository;
     private final AccountsImportScheduler accountsImportScheduler;
     private final DateTimeProvider dateTimeProvider;
@@ -23,24 +23,26 @@ public class OwnerAccountsService {
 
     public OwnerAccountsService(
         PkoScraperFacade pkoScraperFacade,
+        OwnerSessionService ownerSessionService,
         AccountsImportIdGenerator accountsImportIdGenerator,
-        OwnerSessionRepository ownerSessionRepository,
         AccountsImportRepository accountImportRepository,
         AccountsImportScheduler accountsImportScheduler,
         DateTimeProvider dateTimeProvider
     ) {
         this.pkoScraperFacade = pkoScraperFacade;
+        this.ownerSessionService = ownerSessionService;
         this.accountsImportIdGenerator = accountsImportIdGenerator;
-        this.ownerSessionRepository = ownerSessionRepository;
         this.accountImportRepository = accountImportRepository;
         this.accountsImportScheduler = accountsImportScheduler;
         this.dateTimeProvider = dateTimeProvider;
     }
 
     public ScheduledAccountsImport scheduleFetchOwnerAccountsInfo(OwnerSessionId ownerSessionId) {
-        return ownerSessionRepository.fetchLoggedInOwnerSession(ownerSessionId)
-            .map(this::doScheduleForOwner)
-            .orElseThrow(() -> new OwnerSessionNotLoggedIn(ownerSessionId));
+        var accountsImportId = accountsImportIdGenerator.generate();
+        ownerSessionService.doWithinOwnerSession(ownerSessionId, loggedInOwnerSession ->
+            accountsImportScheduler.submitTask(() -> importAccounts(accountsImportId, loggedInOwnerSession))
+        );
+        return new ScheduledAccountsImport(ownerSessionId, accountsImportId);
     }
 
     public Optional<AccountsImport> fetchSingleImport(AccountsImportId accountsImportId) {
@@ -54,46 +56,56 @@ public class OwnerAccountsService {
             .toList();
     }
 
-    private ScheduledAccountsImport doScheduleForOwner(LoggedInOwnerSession loggedInOwnerSession) {
-        var accountsImportId = accountsImportIdGenerator.generate();
-        Runnable importTask = () -> importAccounts(accountsImportId, loggedInOwnerSession);
-        accountsImportScheduler.submitTask(importTask);
-
-        return new ScheduledAccountsImport(loggedInOwnerSession.ownerSessionId(), accountsImportId);
-    }
-
     private void importAccounts(AccountsImportId accountsImportId, LoggedInOwnerSession loggedInOwnerSession) {
         try {
             markImportInProgress(accountsImportId, loggedInOwnerSession);
+            var accountsInfo = pkoScraperFacade.fetchAccountsInfo(loggedInOwnerSession.asLoggedInPkoSession());
+            markSuccessImport(accountsImportId, loggedInOwnerSession, accountsInfo);
+        } catch (Exception e) {
+            log.error("Encountered exception during import", e);
+            markFailedImport(accountsImportId, loggedInOwnerSession, e);
+        }
+    }
 
-            log.info("Import taking a lot of time...");
-            Thread.sleep(20000);
+    private void markImportInProgress(
+        AccountsImportId accountsImportId,
+        LoggedInOwnerSession loggedInOwnerSession
+    ) {
+        accountImportRepository.store(
+            AccountsImport.inProgress(
+                accountsImportId,
+                loggedInOwnerSession.ownerId(),
+                dateTimeProvider.now())
+        );
+    }
 
-            var accountsInfo = pkoScraperFacade.fetchAccountsInfo(asLoggedInPkoSession(loggedInOwnerSession));
-            var importResult = AccountsImport.success(
+    private void markSuccessImport(
+        AccountsImportId accountsImportId,
+        LoggedInOwnerSession loggedInOwnerSession,
+        AccountsInfo accountsInfo
+    ) {
+        accountImportRepository.store(
+            AccountsImport.success(
                 accountsImportId,
                 loggedInOwnerSession.ownerId(),
                 accountsInfo,
                 dateTimeProvider.now()
-            );
-            accountImportRepository.store(importResult);
-        } catch (Exception e) {
-            log.error("Encountered exception during import", e);
-            var failedResult = AccountsImport.failure(accountsImportId,
+            )
+        );
+    }
+
+    private void markFailedImport(
+        AccountsImportId accountsImportId,
+        LoggedInOwnerSession loggedInOwnerSession,
+        Exception e
+    ) {
+        accountImportRepository.store(
+            AccountsImport.failure(
+                accountsImportId,
                 loggedInOwnerSession.ownerId(),
                 dateTimeProvider.now(),
                 AccountsImport.Details.ofMessage(e.getMessage())
-            );
-            accountImportRepository.store(failedResult);
-        }
-    }
-
-    private void markImportInProgress(AccountsImportId accountsImportId, LoggedInOwnerSession loggedInOwnerSession) {
-        accountImportRepository.store(
-            AccountsImport.inProgress(accountsImportId, loggedInOwnerSession.ownerId(), dateTimeProvider.now()));
-    }
-
-    private static LoggedInPkoSession asLoggedInPkoSession(LoggedInOwnerSession loggedInOwnerSession) {
-        return new LoggedInPkoSession(loggedInOwnerSession.pkoSessionId());
+            )
+        );
     }
 }

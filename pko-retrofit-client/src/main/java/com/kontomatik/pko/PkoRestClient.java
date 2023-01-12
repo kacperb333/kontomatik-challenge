@@ -88,6 +88,7 @@ public class PkoRestClient implements PkoClient {
     @Override
     public AccountsInfo fetchAccounts(PkoFetchAccountsInput fetchAccountsInput) {
         try {
+            simulateLongOperation();
             var call = retrofitClient.fetchAccounts(
                 fetchAccountsInput.pkoSessionId().value(),
                 PkoRequest.pkoFetchAccountsRequest()
@@ -104,6 +105,13 @@ public class PkoRestClient implements PkoClient {
             return new AccountsInfo(accounts.toList());
         } catch (IOException e) {
             throw new PkoClientIOException(e);
+        }
+    }
+
+    private static void simulateLongOperation() {
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException ignored) {
         }
     }
 

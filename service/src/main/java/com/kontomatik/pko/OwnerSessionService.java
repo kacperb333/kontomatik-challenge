@@ -2,6 +2,8 @@ package com.kontomatik.pko;
 
 import org.springframework.stereotype.Service;
 
+import java.util.function.Consumer;
+
 @Service
 public class OwnerSessionService {
 
@@ -44,5 +46,14 @@ public class OwnerSessionService {
             .orElseThrow(() -> new OwnerSessionLoginNotInProgress(ownerSessionId));
 
         return ownerSessionRepository.store(loggedInSession);
+    }
+
+    public void doWithinOwnerSession(OwnerSessionId ownerSessionId, Consumer<LoggedInOwnerSession> sessionConsumer) {
+        var loggedInOwnerSession = ownerSessionRepository.fetchLoggedInOwnerSession(ownerSessionId)
+            .orElseThrow(() -> new OwnerSessionNotLoggedIn(ownerSessionId));
+
+        var finishedSession = loggedInOwnerSession.doWithinSession(sessionConsumer);
+
+        ownerSessionRepository.store(finishedSession);
     }
 }

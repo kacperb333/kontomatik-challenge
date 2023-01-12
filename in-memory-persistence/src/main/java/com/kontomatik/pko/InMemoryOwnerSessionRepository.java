@@ -12,6 +12,7 @@ class InMemoryOwnerSessionRepository implements OwnerSessionRepository {
     private final ConcurrentMap<OwnerSessionId, InitialOwnerSession> initialSessions = new ConcurrentHashMap<>();
     private final ConcurrentMap<OwnerSessionId, LoginInProgressOwnerSession> inProgressSessions = new ConcurrentHashMap<>();
     private final ConcurrentMap<OwnerSessionId, LoggedInOwnerSession> loggedInSessions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<OwnerSessionId, FinishedOwnerSession> finishedSessions = new ConcurrentHashMap<>();
 
     @Override
     public InitialOwnerSession store(InitialOwnerSession initialOwnerSession) {
@@ -33,6 +34,14 @@ class InMemoryOwnerSessionRepository implements OwnerSessionRepository {
         inProgressSessions.remove(key);
         loggedInSessions.put(key, loggedInOwnerSession);
         return loggedInOwnerSession;
+    }
+
+    @Override
+    public FinishedOwnerSession store(FinishedOwnerSession finishedOwnerSession) {
+        var key = finishedOwnerSession.ownerSessionId();
+        loggedInSessions.remove(key);
+        finishedSessions.put(key, finishedOwnerSession);
+        return finishedOwnerSession;
     }
 
     @Override

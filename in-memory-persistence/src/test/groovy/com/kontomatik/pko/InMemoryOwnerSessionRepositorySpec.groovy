@@ -23,7 +23,7 @@ class InMemoryOwnerSessionRepositorySpec extends Specification {
     private static GENERIC_FLOW_ID = new FlowId("test-flow-id")
     private static GENERIC_TOKEN = new Token("test-token")
 
-    private static genericLoginInProgressOwnerSession(OwnerSessionId ownerSessionId) {
+    private static LoginInProgressOwnerSession genericLoginInProgressOwnerSession(OwnerSessionId ownerSessionId) {
         new LoginInProgressOwnerSession(
             ownerSessionId,
             GENERIC_OWNER_ID,
@@ -33,11 +33,18 @@ class InMemoryOwnerSessionRepositorySpec extends Specification {
         )
     }
 
-    private static genericLoggedInOwnerSession(OwnerSessionId ownerSessionId) {
+    private static LoggedInOwnerSession genericLoggedInOwnerSession(OwnerSessionId ownerSessionId) {
         new LoggedInOwnerSession(
             ownerSessionId,
             GENERIC_OWNER_ID,
             GENERIC_PKO_SESSION_ID
+        )
+    }
+
+    private static FinishedOwnerSession genericFinishedOwnerSession(OwnerSessionId ownerSessionId) {
+        return new FinishedOwnerSession(
+            ownerSessionId,
+            GENERIC_OWNER_ID
         )
     }
 
@@ -92,7 +99,7 @@ class InMemoryOwnerSessionRepositorySpec extends Specification {
         repository.fetchInitialOwnerSession(GENERIC_OWNER_SESSION_ID).isEmpty()
     }
 
-    def "string logged in owner session should clear corresponding login in progress owner session"() {
+    def "storing logged in owner session should clear corresponding login in progress owner session"() {
         given:
         repository.store(genericLoginInProgressOwnerSession(GENERIC_OWNER_SESSION_ID))
 
@@ -101,6 +108,17 @@ class InMemoryOwnerSessionRepositorySpec extends Specification {
 
         then:
         repository.fetchLoginInProgressOwnerSession(GENERIC_OWNER_SESSION_ID).isEmpty()
+    }
+
+    def "storing finished owner session should clear corresponding logged in owner session"() {
+        given:
+        repository.store(genericLoggedInOwnerSession(GENERIC_OWNER_SESSION_ID))
+
+        when:
+        repository.store(genericFinishedOwnerSession(GENERIC_OWNER_SESSION_ID))
+
+        then:
+        repository.fetchLoggedInOwnerSession(GENERIC_OWNER_SESSION_ID).isEmpty()
     }
 
     def "should not fetch nonexistent initial owner session"() {
