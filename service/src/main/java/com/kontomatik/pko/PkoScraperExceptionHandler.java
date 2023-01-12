@@ -13,51 +13,55 @@ public class PkoScraperExceptionHandler {
 
     @ExceptionHandler(PkoClient.PkoClientIOException.class)
     ResponseEntity<ErrorMessage> handle(PkoClient.PkoClientIOException ex) {
-        log.warn(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-            .body(new ErrorMessage(
-                "BANKING_SERVICE_UNAVAILABLE",
-                "Problems with PKO banking service, try again later"
-            ));
+        return warnAndRespond(
+            ex,
+            "Problems with PKO banking service, try again later",
+            HttpStatus.SERVICE_UNAVAILABLE
+        );
     }
 
     @ExceptionHandler(UnexpectedAction.class)
     ResponseEntity<ErrorMessage> handle(UnexpectedAction ex) {
-        log.warn(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-            .body(new ErrorMessage(
-                "UNEXPECTED_ACTION",
-                "Unexpected action in login flow, please login to your banking system manually in order to clear any required actions during login (e.g. popup notification windows)"
-            ));
+        return warnAndRespond(
+            ex,
+            "Unexpected action in login flow, please login to your banking system manually in order to clear any required actions during login (e.g. popup notification windows)",
+            HttpStatus.SERVICE_UNAVAILABLE
+        );
     }
 
     @ExceptionHandler(OwnerSessionNotInitialized.class)
     ResponseEntity<ErrorMessage> handle(OwnerSessionNotInitialized ex) {
-        log.warn(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-            .body(new ErrorMessage(
-                "OWNER_SESSION_NOT_INITIALIZED",
-                "Owner session has not been initialized. Make sure proper x-owner-session header is set"
-            ));
+        return warnAndRespond(
+            ex,
+            "Owner session has not been initialized. Make sure proper x-owner-session header is set",
+            HttpStatus.UNPROCESSABLE_ENTITY
+        );
     }
 
     @ExceptionHandler(OwnerSessionLoginNotInProgress.class)
     ResponseEntity<ErrorMessage> handle(OwnerSessionLoginNotInProgress ex) {
-        log.warn(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-            .body(new ErrorMessage(
-                "OWNER_SESSION_LOGIN_NOT_IN_PROGRESS",
-                "Owner session has no login in progress. Make sure proper x-owner-session header is set"
-            ));
+        return warnAndRespond(
+            ex,
+            "Owner session has no login in progress. Make sure proper x-owner-session header is set",
+            HttpStatus.UNPROCESSABLE_ENTITY
+        );
     }
 
     @ExceptionHandler(OwnerSessionNotLoggedIn.class)
     ResponseEntity<ErrorMessage> handle(OwnerSessionNotLoggedIn ex) {
-        log.warn(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        return warnAndRespond(
+            ex,
+            "Owner session is not logged in to banking system. Make sure proper x-owner-session header is set",
+            HttpStatus.UNPROCESSABLE_ENTITY
+        );
+    }
+
+    private ResponseEntity<ErrorMessage> warnAndRespond(Exception ex, String humanReadableMessage, HttpStatus httpStatus) {
+        log.warn("Unrecoverable exception encountered", ex);
+        return ResponseEntity.status(httpStatus)
             .body(new ErrorMessage(
-                "OWNER_SESSION_NOT_LOGGED_IN",
-                "Owner session is not logged in to banking system. Make sure proper x-owner-session header is set"
+                ex.getClass().getSimpleName(),
+                humanReadableMessage
             ));
     }
 

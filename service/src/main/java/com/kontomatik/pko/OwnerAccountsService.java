@@ -66,6 +66,7 @@ public class OwnerAccountsService {
         try {
             markImportInProgress(accountsImportId, loggedInOwnerSession);
 
+            log.info("Import taking a lot of time...");
             Thread.sleep(20000);
 
             var accountsInfo = pkoScraperFacade.fetchAccountsInfo(asLoggedInPkoSession(loggedInOwnerSession));
