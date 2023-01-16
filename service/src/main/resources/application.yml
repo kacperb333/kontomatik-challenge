@@ -1,6 +1,3 @@
-pko-client:
-  base-url: https://www.ipko.pl/
-
 service:
   session-header: x-session
 
