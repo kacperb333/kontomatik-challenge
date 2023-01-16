@@ -2,5 +2,5 @@ service:
   session-header: x-session
 
 accounts-import-scheduler:
-  number-of-threads: 1
+  number-of-threads: 10
   timeout-minutes: 2

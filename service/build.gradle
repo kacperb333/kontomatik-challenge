@@ -17,8 +17,8 @@ repositories {
 }
 
 dependencies {
-  api project(':lib')
-  api 'org.springframework.boot:spring-boot-starter-web'
+  implementation project(':lib')
+  implementation 'org.springframework.boot:spring-boot-starter-web'
 
   testImplementation platform('org.apache.groovy:groovy-bom:4.0.5')
   testImplementation 'org.apache.groovy:groovy'
