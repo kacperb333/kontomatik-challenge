@@ -1,7 +1,4 @@
 rootProject.name = 'MyScraper'
 include 'lib'
-include 'pko-retrofit-client'
 include 'service'
-include 'in-memory-persistence'
-include 'service-app'
 
