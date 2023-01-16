@@ -3,7 +3,7 @@ package com.kontomatik.pko.service.domain.session;
 import java.util.UUID;
 
 class SessionIdGenerator {
-  static OwnerSessionId generate() {
-    return new OwnerSessionId(UUID.randomUUID().toString());
+  static SessionId generate() {
+    return new SessionId(UUID.randomUUID().toString());
   }
 }

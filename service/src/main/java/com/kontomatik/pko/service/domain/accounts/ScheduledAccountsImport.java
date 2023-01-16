@@ -1,9 +1,9 @@
 package com.kontomatik.pko.service.domain.accounts;
 
-import com.kontomatik.pko.service.domain.session.OwnerSessionId;
+import com.kontomatik.pko.service.domain.session.SessionId;
 
 public record ScheduledAccountsImport(
-  OwnerSessionId ownerSessionId,
+  SessionId sessionId,
   AccountsImportId accountsImportId
 ) {
 }

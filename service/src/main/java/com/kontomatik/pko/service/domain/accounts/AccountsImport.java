@@ -1,13 +1,11 @@
 package com.kontomatik.pko.service.domain.accounts;
 
 import com.kontomatik.pko.lib.usecase.accounts.AccountsInfo;
-import com.kontomatik.pko.service.domain.session.OwnerId;
 
 import java.time.Instant;
 
 public record AccountsImport(
   AccountsImportId accountsImportId,
-  OwnerId ownerId,
   Status status,
   Instant createdAt,
   AccountsInfo accountsInfo,
@@ -15,12 +13,10 @@ public record AccountsImport(
 ) {
   static AccountsImport inProgress(
     AccountsImportId accountsImportId,
-    OwnerId ownerId,
     Instant createdAt
   ) {
     return new AccountsImport(
       accountsImportId,
-      ownerId,
       Status.IN_PROGRESS,
       createdAt,
       AccountsInfo.EMPTY,
@@ -30,13 +26,11 @@ public record AccountsImport(
 
   static AccountsImport success(
     AccountsImportId accountsImportId,
-    OwnerId ownerId,
     AccountsInfo accountsInfo,
     Instant createdAt
   ) {
     return new AccountsImport(
       accountsImportId,
-      ownerId,
       Status.SUCCESS,
       createdAt,
       accountsInfo,
@@ -46,13 +40,11 @@ public record AccountsImport(
 
   static AccountsImport failure(
     AccountsImportId accountsImportId,
-    OwnerId ownerId,
     Instant createdAt,
     Details details
   ) {
     return new AccountsImport(
       accountsImportId,
-      ownerId,
       Status.FAILED,
       createdAt,
       AccountsInfo.EMPTY,
@@ -67,7 +59,7 @@ public record AccountsImport(
   public record Details(
     String value
   ) {
-    static final Details EMPTY = new Details(null);
+    public static final Details EMPTY = new Details(null);
 
     static Details ofMessage(String message) {
       return new Details(message);

@@ -1,10 +1,10 @@
 package com.kontomatik.pko.service.domain.session;
 
 public class SessionNotInitialized extends RuntimeException {
-  public final OwnerSessionId ownerSessionId;
+  public final SessionId sessionId;
 
-  public SessionNotInitialized(OwnerSessionId ownerSessionId) {
-    super(String.format("Owner session [%s] has not been initialized", ownerSessionId.value()));
-    this.ownerSessionId = ownerSessionId;
+  public SessionNotInitialized(SessionId sessionId) {
+    super(String.format("Session [%s] has not been initialized", sessionId.value()));
+    this.sessionId = sessionId;
   }
 }

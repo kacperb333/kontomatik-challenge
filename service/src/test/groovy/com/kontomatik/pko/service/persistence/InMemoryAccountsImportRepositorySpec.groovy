@@ -4,7 +4,6 @@ import com.kontomatik.pko.lib.usecase.accounts.AccountInfo
 import com.kontomatik.pko.lib.usecase.accounts.AccountsInfo
 import com.kontomatik.pko.service.domain.accounts.AccountsImport
 import com.kontomatik.pko.service.domain.accounts.AccountsImportId
-import com.kontomatik.pko.service.domain.session.OwnerId
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -25,7 +24,6 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     and:
     AccountsImport anImport = new AccountsImport(
       new AccountsImportId("test-import-id"),
-      new OwnerId("test-owner-id"),
       AccountsImport.Status.SUCCESS,
       importCreatedTime,
       new AccountsInfo([
@@ -35,7 +33,6 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     )
     AccountsImport differentImport = new AccountsImport(
       new AccountsImportId("different-import-id"),
-      new OwnerId("test-owner-id"),
       AccountsImport.Status.SUCCESS,
       importCreatedTime,
       new AccountsInfo([
@@ -57,7 +54,6 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     then:
     with(fetchedImport) {
       it.accountsImportId() == new AccountsImportId("test-import-id")
-      it.ownerId() == new OwnerId("test-owner-id")
       it.status() == AccountsImport.Status.SUCCESS
       it.createdAt() == SOME_INSTANT
       with(it.accountsInfo()) {
@@ -70,89 +66,6 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     }
   }
 
-  def "should fetch all stored imports by owner id older than given instant"() {
-    given:
-    Instant importCreatedTime = SOME_INSTANT
-
-    and:
-    AccountsImport import1 = new AccountsImport(
-      new AccountsImportId("test-import-id-1"),
-      new OwnerId("test-owner-id"),
-      AccountsImport.Status.SUCCESS,
-      importCreatedTime,
-      new AccountsInfo([
-        new AccountInfo("test-account-1", "1221.21", "PLN")
-      ]),
-      AccountsImport.Details.EMPTY
-    )
-    AccountsImport import2 = new AccountsImport(
-      new AccountsImportId("test-import-id-2"),
-      new OwnerId("test-owner-id"),
-      AccountsImport.Status.SUCCESS,
-      importCreatedTime,
-      new AccountsInfo([
-        new AccountInfo("test-account-2", "2221.21", "EUR"),
-        new AccountInfo("test-account-3", "3221.21", "USD")
-      ]),
-      AccountsImport.Details.EMPTY
-    )
-    AccountsImport importOfDifferentOwner = new AccountsImport(
-      new AccountsImportId("test-import-id-3"),
-      new OwnerId("different-owner-id"),
-      AccountsImport.Status.SUCCESS,
-      importCreatedTime,
-      new AccountsInfo([
-        new AccountInfo("different-account-1", "2221.21", "EUR"),
-        new AccountInfo("different-account-2", "3221.21", "USD")
-      ]),
-      AccountsImport.Details.EMPTY
-    )
-
-    and:
-    repository.store(import1)
-    repository.store(import2)
-    repository.store(importOfDifferentOwner)
-
-    when:
-    List<AccountsImport> fetchedImports = repository.fetchAllForOwnerNewerThan(
-      new OwnerId("test-owner-id"),
-      importCreatedTime.minusMillis(1)
-    )
-
-    then:
-    with(fetchedImports) {
-      it.size() == 2
-      with(it.find { it.accountsImportId() == new AccountsImportId("test-import-id-1") }) {
-        it.ownerId() == new OwnerId("test-owner-id")
-        it.status() == AccountsImport.Status.SUCCESS
-        it.createdAt() == SOME_INSTANT
-        with(it.accountsInfo()) {
-          it.accounts().size() == 1
-          with(it.accounts().find { it.name() == "test-account-1" }) {
-            it.balance() == "1221.21"
-            it.currency() == "PLN"
-          }
-        }
-      }
-      with(it.find { it.accountsImportId() == new AccountsImportId("test-import-id-2") }) {
-        it.ownerId() == new OwnerId("test-owner-id")
-        it.status() == AccountsImport.Status.SUCCESS
-        it.createdAt() == SOME_INSTANT
-        with(it.accountsInfo()) {
-          it.accounts().size() == 2
-          with(it.accounts().find { it.name() == "test-account-2" }) {
-            it.balance() == "2221.21"
-            it.currency() == "EUR"
-          }
-          with(it.accounts().find { it.name() == "test-account-3" }) {
-            it.balance() == "3221.21"
-            it.currency() == "USD"
-          }
-        }
-      }
-    }
-  }
-
   def "should skip fetching single import if it's older than given instant"() {
     given:
     Instant importCreatedTime = SOME_INSTANT
@@ -160,7 +73,6 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     and:
     repository.store(genericImport(
       new AccountsImportId("test-import"),
-      new OwnerId("test-owner"),
       importCreatedTime
     ))
 
@@ -180,45 +92,6 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     SOME_INSTANT.plusMillis(1)  || false
   }
 
-  def "should skip fetching imports of an owner that are older than given instant"() {
-    given:
-    Instant someInstant = SOME_INSTANT
-
-    and:
-    repository.store(genericImport(
-      new AccountsImportId("test-import-1"),
-      new OwnerId("test-owner"),
-      someInstant
-    ))
-    repository.store(genericImport(
-      new AccountsImportId("test-import-2"),
-      new OwnerId("test-owner"),
-      someInstant.plusMillis(1000)
-    ))
-    repository.store(genericImport(
-      new AccountsImportId("test-import-3"),
-      new OwnerId("test-owner"),
-      someInstant.plusMillis(2000)
-    ))
-
-    when:
-    List<String> fetchedImports = repository.fetchAllForOwnerNewerThan(new OwnerId("test-owner"), testedInstant)
-      *.accountsImportId()
-      *.value()
-
-    then:
-    fetchedImports.toSet() == expectedFetchedImports.toSet()
-
-    where:
-    testedInstant                 || expectedFetchedImports
-    SOME_INSTANT.minusMillis(1)   || ["test-import-1", "test-import-2", "test-import-3"]
-    SOME_INSTANT                  || ["test-import-2", "test-import-3"]
-    SOME_INSTANT.plusMillis(999)  || ["test-import-2", "test-import-3"]
-    SOME_INSTANT.plusMillis(1000) || ["test-import-3"]
-    SOME_INSTANT.plusMillis(1999) || ["test-import-3"]
-    SOME_INSTANT.plusMillis(2000) || []
-  }
-
   def "should not fetch single nonexistent import"() {
     given:
     Instant someInstant = SOME_INSTANT
@@ -226,17 +99,14 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     and:
     repository.store(genericImport(
       new AccountsImportId("test-import-1"),
-      new OwnerId("test-owner"),
       someInstant
     ))
     repository.store(genericImport(
       new AccountsImportId("test-import-2"),
-      new OwnerId("test-owner"),
       someInstant.plusMillis(1000)
     ))
     repository.store(genericImport(
       new AccountsImportId("test-import-3"),
-      new OwnerId("test-owner"),
       someInstant.plusMillis(2000)
     ))
 
@@ -246,41 +116,13 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
       .isEmpty()
   }
 
-  def "should not fetch imports for nonexistent owner"() {
-    given:
-    Instant someInstant = SOME_INSTANT
-
-    and:
-    repository.store(genericImport(
-      new AccountsImportId("test-import-1"),
-      new OwnerId("test-owner"),
-      someInstant
-    ))
-    repository.store(genericImport(
-      new AccountsImportId("test-import-2"),
-      new OwnerId("test-owner"),
-      someInstant.plusMillis(1000)
-    ))
-    repository.store(genericImport(
-      new AccountsImportId("test-import-3"),
-      new OwnerId("test-owner"),
-      someInstant.plusMillis(2000)
-    ))
-
-    expect:
-    repository
-      .fetchAllForOwnerNewerThan(new OwnerId("nonexistent"), SOME_INSTANT.minusMillis(1))
-      .isEmpty()
-  }
-
   private static Instant instant(String dateTime) {
     return ZonedDateTime.parse(dateTime).toInstant()
   }
 
-  private static AccountsImport genericImport(AccountsImportId accountsImportId, OwnerId ownerId, Instant createdAt) {
+  private static AccountsImport genericImport(AccountsImportId accountsImportId, Instant createdAt) {
     return new AccountsImport(
       accountsImportId,
-      ownerId,
       AccountsImport.Status.SUCCESS,
       createdAt,
       new AccountsInfo([

@@ -1,15 +1,14 @@
 package com.kontomatik.pko.service.domain.session;
 
 public record FinishedSession(
-  OwnerSessionId ownerSessionId,
-  OwnerId ownerId
+  SessionId sessionId
 ) {
   public static class SessionLoginNotInProgress extends RuntimeException {
-    public final OwnerSessionId ownerSessionId;
+    public final SessionId sessionId;
 
-    public SessionLoginNotInProgress(OwnerSessionId ownerSessionId) {
-      super(String.format("Owner session [%s] has no login in progress", ownerSessionId.value()));
-      this.ownerSessionId = ownerSessionId;
+    public SessionLoginNotInProgress(SessionId sessionId) {
+      super(String.format("Session [%s] has no login in progress", sessionId.value()));
+      this.sessionId = sessionId;
     }
   }
 }

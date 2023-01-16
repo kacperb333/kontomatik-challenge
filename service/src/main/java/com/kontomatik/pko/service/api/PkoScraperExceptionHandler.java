@@ -38,7 +38,7 @@ class PkoScraperExceptionHandler {
   ResponseEntity<ErrorMessage> handle(SessionNotInitialized ex) {
     return warnAndRespond(
       ex,
-      "Owner session has not been initialized. Make sure proper x-owner-session header is set",
+      "Session has not been initialized. Make sure proper x-session header is set",
       HttpStatus.UNPROCESSABLE_ENTITY
     );
   }
@@ -47,7 +47,7 @@ class PkoScraperExceptionHandler {
   ResponseEntity<ErrorMessage> handle(FinishedSession.SessionLoginNotInProgress ex) {
     return warnAndRespond(
       ex,
-      "Owner session has no login in progress. Make sure proper x-owner-session header is set",
+      "Session has no login in progress. Make sure proper x-session header is set",
       HttpStatus.UNPROCESSABLE_ENTITY
     );
   }
@@ -56,7 +56,7 @@ class PkoScraperExceptionHandler {
   ResponseEntity<ErrorMessage> handle(SessionNotLoggedIn ex) {
     return warnAndRespond(
       ex,
-      "Owner session is not logged in to banking system. Make sure proper x-owner-session header is set",
+      "Session is not logged in to banking system. Make sure proper x-session header is set",
       HttpStatus.UNPROCESSABLE_ENTITY
     );
   }

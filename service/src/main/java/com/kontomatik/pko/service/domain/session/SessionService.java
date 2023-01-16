@@ -11,49 +11,49 @@ import java.util.function.Consumer;
 public class SessionService {
 
   private final PkoScraperFacade pkoScraperFacade;
-  private final SessionRepository ownerSessionRepository;
+  private final SessionRepository sessionRepository;
 
   SessionService(
     PkoScraperFacade pkoScraperFacade,
-    SessionRepository ownerSessionRepository
+    SessionRepository sessionRepository
   ) {
     this.pkoScraperFacade = pkoScraperFacade;
-    this.ownerSessionRepository = ownerSessionRepository;
+    this.sessionRepository = sessionRepository;
   }
 
-  public InitialSession initializeOwnerSession(OwnerId ownerId) {
+  public InitialSession initializeSession() {
     var generatedSessionId = SessionIdGenerator.generate();
-    return ownerSessionRepository.store(new InitialSession(generatedSessionId, ownerId));
+    return sessionRepository.store(new InitialSession(generatedSessionId));
   }
 
-  public LoginInProgressSession logIn(OwnerSessionId ownerSessionId, Credentials credentials) {
-    ownerSessionRepository.fetchInitialOwnerSession(ownerSessionId);
-    var loginInProgressSession = ownerSessionRepository.fetchInitialOwnerSession(ownerSessionId)
-      .map(initialOwnerSession -> initialOwnerSession.initializeLogIn(pkoScraperFacade.logIn(credentials)))
-      .orElseThrow(() -> new SessionNotInitialized(ownerSessionId));
+  public LoginInProgressSession logIn(SessionId sessionId, Credentials credentials) {
+    sessionRepository.fetchInitialSession(sessionId);
+    var loginInProgressSession = sessionRepository.fetchInitialSession(sessionId)
+      .map(initialSession -> initialSession.initializeLogIn(pkoScraperFacade.logIn(credentials)))
+      .orElseThrow(() -> new SessionNotInitialized(sessionId));
 
-    return ownerSessionRepository.store(loginInProgressSession);
+    return sessionRepository.store(loginInProgressSession);
   }
 
-  public LoggedInSession inputOtp(OwnerSessionId ownerSessionId, Otp otp) {
-    var loggedInSession = ownerSessionRepository.fetchLoginInProgressOwnerSession(ownerSessionId)
-      .map(inProgressOwnerSession ->
-        inProgressOwnerSession.finishLogin(pkoScraperFacade.inputOtp(
-          inProgressOwnerSession.asLoginInProgressPkoSession(),
+  public LoggedInSession inputOtp(SessionId sessionId, Otp otp) {
+    var loggedInSession = sessionRepository.fetchLoginInProgressSession(sessionId)
+      .map(inProgressSession ->
+        inProgressSession.finishLogin(pkoScraperFacade.inputOtp(
+          inProgressSession.asLoginInProgressPkoSession(),
           otp
         ))
       )
-      .orElseThrow(() -> new FinishedSession.SessionLoginNotInProgress(ownerSessionId));
+      .orElseThrow(() -> new FinishedSession.SessionLoginNotInProgress(sessionId));
 
-    return ownerSessionRepository.store(loggedInSession);
+    return sessionRepository.store(loggedInSession);
   }
 
-  public void doWithinOwnerSession(OwnerSessionId ownerSessionId, Consumer<LoggedInSession> sessionConsumer) {
-    var loggedInOwnerSession = ownerSessionRepository.fetchLoggedInOwnerSession(ownerSessionId)
-      .orElseThrow(() -> new SessionNotLoggedIn(ownerSessionId));
+  public void doWithinSession(SessionId sessionId, Consumer<LoggedInSession> sessionConsumer) {
+    var loggedInSession = sessionRepository.fetchLoggedInSession(sessionId)
+      .orElseThrow(() -> new SessionNotLoggedIn(sessionId));
 
-    var finishedSession = loggedInOwnerSession.doWithinSession(sessionConsumer);
+    var finishedSession = loggedInSession.doWithinSession(sessionConsumer);
 
-    ownerSessionRepository.store(finishedSession);
+    sessionRepository.store(finishedSession);
   }
 }

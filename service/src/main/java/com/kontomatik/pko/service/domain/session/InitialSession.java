@@ -3,13 +3,11 @@ package com.kontomatik.pko.service.domain.session;
 import com.kontomatik.pko.lib.usecase.login.LoginInProgressPkoSession;
 
 public record InitialSession(
-  OwnerSessionId ownerSessionId,
-  OwnerId ownerId
+  SessionId SessionId
 ) {
   public LoginInProgressSession initializeLogIn(LoginInProgressPkoSession loginInProgressPkoSession) {
     return new LoginInProgressSession(
-      ownerSessionId,
-      ownerId,
+      SessionId,
       loginInProgressPkoSession.pkoSessionId(),
       loginInProgressPkoSession.flowId(),
       loginInProgressPkoSession.token()

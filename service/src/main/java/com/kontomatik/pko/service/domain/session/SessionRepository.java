@@ -3,17 +3,17 @@ package com.kontomatik.pko.service.domain.session;
 import java.util.Optional;
 
 public interface SessionRepository {
-  InitialSession store(InitialSession initialOwnerSession);
+  InitialSession store(InitialSession initialSession);
 
-  LoginInProgressSession store(LoginInProgressSession loginInProgressOwnerSession);
+  LoginInProgressSession store(LoginInProgressSession loginInProgressSession);
 
-  LoggedInSession store(LoggedInSession loggedInOwnerSession);
+  LoggedInSession store(LoggedInSession loggedInSession);
 
-  FinishedSession store(FinishedSession finishedOwnerSession);
+  FinishedSession store(FinishedSession finishedSession);
 
-  Optional<InitialSession> fetchInitialOwnerSession(OwnerSessionId ownerId);
+  Optional<InitialSession> fetchInitialSession(SessionId sessionId);
 
-  Optional<LoginInProgressSession> fetchLoginInProgressOwnerSession(OwnerSessionId ownerId);
+  Optional<LoginInProgressSession> fetchLoginInProgressSession(SessionId sessionId);
 
-  Optional<LoggedInSession> fetchLoggedInOwnerSession(OwnerSessionId ownerId);
+  Optional<LoggedInSession> fetchLoggedInSession(SessionId sessionId);
 }

@@ -1,21 +1,21 @@
 package com.kontomatik.pko.service.api;
 
-import com.kontomatik.pko.service.domain.session.OwnerSessionId;
+import com.kontomatik.pko.service.domain.session.SessionId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 @Component
 class SessionHeaderProvider {
-  private final String ownerSessionHeaderName;
+  private final String sessionHeaderName;
 
-  public SessionHeaderProvider(@Value("${service.owner-session-header}") String ownerSessionHeaderName) {
-    this.ownerSessionHeaderName = ownerSessionHeaderName;
+  public SessionHeaderProvider(@Value("${service.session-header}") String sessionHeaderName) {
+    this.sessionHeaderName = sessionHeaderName;
   }
 
-  public HttpHeaders ownerSessionHeader(OwnerSessionId ownerSessionId) {
+  public HttpHeaders sessionHeader(SessionId sessionId) {
     HttpHeaders headers = new HttpHeaders();
-    headers.set(ownerSessionHeaderName, ownerSessionId.value());
+    headers.set(sessionHeaderName, sessionId.value());
     return headers;
   }
 }
