@@ -42,11 +42,11 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     )
 
     and:
-    repository.store(anImport)
-    repository.store(differentImport)
+    repository.save(anImport)
+    repository.save(differentImport)
 
     when:
-    AccountsImport fetchedImport = repository.fetchOneNewerThan(
+    AccountsImport fetchedImport = repository.findOneNewerThan(
       new AccountsImportId("test-import-id"),
       importCreatedTime.minusMillis(1)
     ).get()
@@ -71,13 +71,13 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     Instant importCreatedTime = SOME_INSTANT
 
     and:
-    repository.store(genericImport(
+    repository.save(genericImport(
       new AccountsImportId("test-import"),
       importCreatedTime
     ))
 
     when:
-    Optional<AccountsImport> fetchedImport = repository.fetchOneNewerThan(
+    Optional<AccountsImport> fetchedImport = repository.findOneNewerThan(
       new AccountsImportId("test-import"),
       testedInstant
     )
@@ -97,22 +97,22 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     Instant someInstant = SOME_INSTANT
 
     and:
-    repository.store(genericImport(
+    repository.save(genericImport(
       new AccountsImportId("test-import-1"),
       someInstant
     ))
-    repository.store(genericImport(
+    repository.save(genericImport(
       new AccountsImportId("test-import-2"),
       someInstant.plusMillis(1000)
     ))
-    repository.store(genericImport(
+    repository.save(genericImport(
       new AccountsImportId("test-import-3"),
       someInstant.plusMillis(2000)
     ))
 
     expect:
     repository
-      .fetchOneNewerThan(new AccountsImportId("nonexistent"), SOME_INSTANT.minusMillis(1))
+      .findOneNewerThan(new AccountsImportId("nonexistent"), SOME_INSTANT.minusMillis(1))
       .isEmpty()
   }
 

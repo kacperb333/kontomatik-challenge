@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 public interface AccountsImportRepository {
-  AccountsImport store(AccountsImport accountsImport);
+  AccountsImport save(AccountsImport accountsImport);
 
-  Optional<AccountsImport> fetchOneNewerThan(AccountsImportId accountsImportId, Instant maxTime);
+  Optional<AccountsImport> findOneNewerThan(AccountsImportId accountsImportId, Instant maxTime);
 }

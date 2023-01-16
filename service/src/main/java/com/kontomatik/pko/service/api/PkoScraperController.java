@@ -32,20 +32,11 @@ class PkoScraperController {
     this.sessionHeaderProvider = sessionHeaderProvider;
   }
 
-  @PostMapping("/session")
-  ResponseEntity<Void> initializeSession() {
-    var initialSession = sessionService.initializeSession();
-    return ResponseEntity.ok()
-      .headers(sessionHeaderProvider.sessionHeader(initialSession.SessionId()))
-      .build();
-  }
-
   @PostMapping("/session/login")
   ResponseEntity<Void> logIn(
-    @RequestHeader(SESSION_HEADER) SessionId sessionId,
     @RequestBody CredentialsRequest request
   ) {
-    var logInResult = sessionService.logIn(sessionId, request.credentials());
+    var logInResult = sessionService.logIn(request.credentials());
     return ResponseEntity.ok()
       .headers(sessionHeaderProvider.sessionHeader(logInResult.sessionId()))
       .build();

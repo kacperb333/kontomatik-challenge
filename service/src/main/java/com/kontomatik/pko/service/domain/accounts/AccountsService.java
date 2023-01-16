@@ -49,7 +49,7 @@ public class AccountsService {
 
   public Optional<AccountsImport> fetchSingleImport(AccountsImportId accountsImportId) {
     var importMaxTime = dateTimeProvider.now().minus(IMPORT_AVAILABILITY_DURATION);
-    return accountImportRepository.fetchOneNewerThan(accountsImportId, importMaxTime);
+    return accountImportRepository.findOneNewerThan(accountsImportId, importMaxTime);
   }
 
   private void importAccounts(AccountsImportId accountsImportId, LoggedInSession loggedInSession) {
@@ -64,7 +64,7 @@ public class AccountsService {
   }
 
   private void markImportInProgress(AccountsImportId accountsImportId) {
-    accountImportRepository.store(
+    accountImportRepository.save(
       AccountsImport.inProgress(
         accountsImportId,
         dateTimeProvider.now())
@@ -72,7 +72,7 @@ public class AccountsService {
   }
 
   private void markSuccessImport(AccountsImportId accountsImportId, AccountsInfo accountsInfo) {
-    accountImportRepository.store(
+    accountImportRepository.save(
       AccountsImport.success(
         accountsImportId,
         accountsInfo,
@@ -82,7 +82,7 @@ public class AccountsService {
   }
 
   private void markFailedImport(AccountsImportId accountsImportId, Exception e) {
-    accountImportRepository.store(
+    accountImportRepository.save(
       AccountsImport.failure(
         accountsImportId,
         dateTimeProvider.now(),

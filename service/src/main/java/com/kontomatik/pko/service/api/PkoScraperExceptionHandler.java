@@ -2,7 +2,7 @@ package com.kontomatik.pko.service.api;
 
 import com.kontomatik.pko.lib.client.PkoClient;
 import com.kontomatik.pko.lib.usecase.login.UnexpectedAction;
-import com.kontomatik.pko.service.domain.session.FinishedSession;
+import com.kontomatik.pko.service.domain.session.SessionLoginNotInProgress;
 import com.kontomatik.pko.service.domain.session.SessionNotInitialized;
 import com.kontomatik.pko.service.domain.session.SessionNotLoggedIn;
 import org.slf4j.Logger;
@@ -43,8 +43,8 @@ class PkoScraperExceptionHandler {
     );
   }
 
-  @ExceptionHandler(FinishedSession.SessionLoginNotInProgress.class)
-  ResponseEntity<ErrorMessage> handle(FinishedSession.SessionLoginNotInProgress ex) {
+  @ExceptionHandler(SessionLoginNotInProgress.class)
+  ResponseEntity<ErrorMessage> handle(SessionLoginNotInProgress ex) {
     return warnAndRespond(
       ex,
       "Session has no login in progress. Make sure proper x-session header is set",

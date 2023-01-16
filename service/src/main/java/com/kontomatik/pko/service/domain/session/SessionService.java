@@ -21,39 +21,30 @@ public class SessionService {
     this.sessionRepository = sessionRepository;
   }
 
-  public InitialSession initializeSession() {
-    var generatedSessionId = SessionIdGenerator.generate();
-    return sessionRepository.store(new InitialSession(generatedSessionId));
+  public LoginInProgressSession logIn(Credentials credentials) {
+    InitialSession initialSession = createInitialSession();
+    LoginInProgressSession loginInProgressSession = initialSession.initializeLogIn(pkoScraperFacade.logIn(credentials));
+    return sessionRepository.save(loginInProgressSession);
   }
 
-  public LoginInProgressSession logIn(SessionId sessionId, Credentials credentials) {
-    sessionRepository.fetchInitialSession(sessionId);
-    var loginInProgressSession = sessionRepository.fetchInitialSession(sessionId)
-      .map(initialSession -> initialSession.initializeLogIn(pkoScraperFacade.logIn(credentials)))
-      .orElseThrow(() -> new SessionNotInitialized(sessionId));
-
-    return sessionRepository.store(loginInProgressSession);
+  private static InitialSession createInitialSession() {
+    return new InitialSession(SessionIdGenerator.generate());
   }
 
   public LoggedInSession inputOtp(SessionId sessionId, Otp otp) {
-    var loggedInSession = sessionRepository.fetchLoginInProgressSession(sessionId)
-      .map(inProgressSession ->
-        inProgressSession.finishLogin(pkoScraperFacade.inputOtp(
-          inProgressSession.asLoginInProgressPkoSession(),
-          otp
-        ))
+    LoginInProgressSession loginInProgressSession = sessionRepository.getLoginInProgressSession(sessionId);
+    LoggedInSession loggedInSession = loginInProgressSession.finishLogin(
+      pkoScraperFacade.inputOtp(
+        loginInProgressSession.asLoginInProgressPkoSession(),
+        otp
       )
-      .orElseThrow(() -> new FinishedSession.SessionLoginNotInProgress(sessionId));
-
-    return sessionRepository.store(loggedInSession);
+    );
+    return sessionRepository.save(loggedInSession);
   }
 
   public void doWithinSession(SessionId sessionId, Consumer<LoggedInSession> sessionConsumer) {
-    var loggedInSession = sessionRepository.fetchLoggedInSession(sessionId)
-      .orElseThrow(() -> new SessionNotLoggedIn(sessionId));
-
-    var finishedSession = loggedInSession.doWithinSession(sessionConsumer);
-
-    sessionRepository.store(finishedSession);
+    LoggedInSession loggedInSession = sessionRepository.getLoggedInSession(sessionId);
+    FinishedSession finishedSession = loggedInSession.doWithinSession(sessionConsumer);
+    sessionRepository.save(finishedSession);
   }
 }

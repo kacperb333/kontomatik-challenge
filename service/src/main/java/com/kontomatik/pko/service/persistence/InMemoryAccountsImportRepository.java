@@ -16,13 +16,13 @@ class InMemoryAccountsImportRepository implements AccountsImportRepository {
   private final ConcurrentMap<AccountsImportId, AccountsImport> imports = new ConcurrentHashMap<>();
 
   @Override
-  public AccountsImport store(AccountsImport accountsImport) {
+  public AccountsImport save(AccountsImport accountsImport) {
     imports.put(accountsImport.accountsImportId(), accountsImport);
     return accountsImport;
   }
 
   @Override
-  public Optional<AccountsImport> fetchOneNewerThan(AccountsImportId accountsImportId, Instant maxTime) {
+  public Optional<AccountsImport> findOneNewerThan(AccountsImportId accountsImportId, Instant maxTime) {
     return Optional.ofNullable(imports.get(accountsImportId))
       .filter(it -> it.createdAt().isAfter(maxTime));
   }
