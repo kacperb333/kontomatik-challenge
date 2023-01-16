@@ -2,7 +2,7 @@ package com.kontomatik.pko.service.domain;
 
 import com.kontomatik.pko.lib.usecase.accounts.AccountsInfo;
 
-public interface FinishedSession {
+sealed public interface FinishedSession permits ImportFailedSession, ImportFinishedSession {
   SessionId sessionId();
 
   AccountsInfo accountsInfo();

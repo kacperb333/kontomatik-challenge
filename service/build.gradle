@@ -10,7 +10,7 @@ jar { enabled = true }
 
 group 'com.kontomatik'
 version '1.0-SNAPSHOT'
-sourceCompatibility = '17'
+sourceCompatibility = "17.PREVIEW"
 
 repositories {
   mavenCentral()
@@ -19,6 +19,7 @@ repositories {
 dependencies {
   implementation project(':lib')
   implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
   testImplementation platform('org.apache.groovy:groovy-bom:4.0.5')
   testImplementation 'org.apache.groovy:groovy'
@@ -28,4 +29,9 @@ dependencies {
 
 test {
   useJUnitPlatform()
+  jvmArgs(['--enable-preview'])
+}
+
+tasks.withType(JavaCompile).each {
+  it.options.compilerArgs.add('--enable-preview')
 }
