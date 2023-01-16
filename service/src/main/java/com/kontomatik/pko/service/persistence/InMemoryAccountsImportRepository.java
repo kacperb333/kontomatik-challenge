@@ -5,7 +5,6 @@ import com.kontomatik.pko.service.domain.accounts.AccountsImportId;
 import com.kontomatik.pko.service.domain.accounts.AccountsImportRepository;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -22,8 +21,7 @@ class InMemoryAccountsImportRepository implements AccountsImportRepository {
   }
 
   @Override
-  public Optional<AccountsImport> findOneNewerThan(AccountsImportId accountsImportId, Instant maxTime) {
-    return Optional.ofNullable(imports.get(accountsImportId))
-      .filter(it -> it.createdAt().isAfter(maxTime));
+  public Optional<AccountsImport> findOne(AccountsImportId accountsImportId) {
+    return Optional.ofNullable(imports.get(accountsImportId));
   }
 }

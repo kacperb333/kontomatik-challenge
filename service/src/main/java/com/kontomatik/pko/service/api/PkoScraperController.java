@@ -3,7 +3,6 @@ package com.kontomatik.pko.service.api;
 import com.kontomatik.pko.lib.usecase.accounts.AccountInfo;
 import com.kontomatik.pko.lib.usecase.login.Credentials;
 import com.kontomatik.pko.lib.usecase.login.Otp;
-import com.kontomatik.pko.service.domain.accounts.AccountsImport;
 import com.kontomatik.pko.service.domain.accounts.AccountsImportId;
 import com.kontomatik.pko.service.domain.accounts.AccountsService;
 import com.kontomatik.pko.service.domain.session.SessionId;
@@ -60,7 +59,6 @@ class PkoScraperController {
   ) {
     var scheduleImportResult = accountsService.scheduleFetchAccountsInfo(sessionId);
     return ResponseEntity.accepted()
-      .headers(sessionHeaderProvider.sessionHeader(scheduleImportResult.sessionId()))
       .body(new ImportAccountsResponse(scheduleImportResult.accountsImportId().value()));
   }
 
@@ -68,11 +66,8 @@ class PkoScraperController {
   ResponseEntity<AccountsInfoResponse> fetchSingleImport(@RequestParam AccountsImportId accountsImportId) {
     return accountsService.fetchSingleImport(accountsImportId)
       .map(it -> new AccountsInfoResponse(
-        it.accountsImportId().value(),
-        it.status(),
-        it.accountsInfo().accounts(),
-        it.details().value())
-      )
+        it.accountsInfo().accounts()
+      ))
       .map(ResponseEntity::ok)
       .orElseGet(() -> ResponseEntity.notFound().build());
   }
@@ -93,10 +88,7 @@ class PkoScraperController {
   }
 
   private record AccountsInfoResponse(
-    String accountsImportId,
-    AccountsImport.Status importStatus,
-    List<AccountInfo> accounts,
-    String additionalMessage
+    List<AccountInfo> accounts
   ) {
   }
 }

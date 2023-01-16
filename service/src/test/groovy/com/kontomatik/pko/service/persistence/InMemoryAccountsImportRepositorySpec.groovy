@@ -17,7 +17,7 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
 
   private static SOME_INSTANT = instant("2020-01-01T10:00:00+01:00")
 
-  def "should fetch single stored import by id when it's older than given instant"() {
+  def "should fetch single stored import by id"() {
     given:
     Instant importCreatedTime = SOME_INSTANT
 
@@ -28,8 +28,7 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
       importCreatedTime,
       new AccountsInfo([
         new AccountInfo("test-account", "1221.21", "PLN")
-      ]),
-      AccountsImport.Details.EMPTY
+      ])
     )
     AccountsImport differentImport = new AccountsImport(
       new AccountsImportId("different-import-id"),
@@ -37,8 +36,7 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
       importCreatedTime,
       new AccountsInfo([
         new AccountInfo("different-account", "2221.21", "EUR")
-      ]),
-      AccountsImport.Details.EMPTY
+      ])
     )
 
     and:
@@ -46,9 +44,8 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
     repository.save(differentImport)
 
     when:
-    AccountsImport fetchedImport = repository.findOneNewerThan(
-      new AccountsImportId("test-import-id"),
-      importCreatedTime.minusMillis(1)
+    AccountsImport fetchedImport = repository.findOne(
+      new AccountsImportId("test-import-id")
     ).get()
 
     then:
@@ -64,32 +61,6 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
         }
       }
     }
-  }
-
-  def "should skip fetching single import if it's older than given instant"() {
-    given:
-    Instant importCreatedTime = SOME_INSTANT
-
-    and:
-    repository.save(genericImport(
-      new AccountsImportId("test-import"),
-      importCreatedTime
-    ))
-
-    when:
-    Optional<AccountsImport> fetchedImport = repository.findOneNewerThan(
-      new AccountsImportId("test-import"),
-      testedInstant
-    )
-
-    then:
-    fetchedImport.isPresent() == importFetched
-
-    where:
-    testedInstant               || importFetched
-    SOME_INSTANT.minusMillis(1) || true
-    SOME_INSTANT                || false
-    SOME_INSTANT.plusMillis(1)  || false
   }
 
   def "should not fetch single nonexistent import"() {
@@ -112,7 +83,7 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
 
     expect:
     repository
-      .findOneNewerThan(new AccountsImportId("nonexistent"), SOME_INSTANT.minusMillis(1))
+      .findOne(new AccountsImportId("nonexistent"))
       .isEmpty()
   }
 
@@ -127,8 +98,7 @@ class InMemoryAccountsImportRepositorySpec extends Specification {
       createdAt,
       new AccountsInfo([
         new AccountInfo("some-account", "1337.69", "PLN")
-      ]),
-      AccountsImport.Details.EMPTY
+      ])
     )
   }
 }
