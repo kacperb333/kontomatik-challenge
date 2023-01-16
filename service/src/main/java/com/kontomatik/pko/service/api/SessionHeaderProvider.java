@@ -1,6 +1,6 @@
 package com.kontomatik.pko.service.api;
 
-import com.kontomatik.pko.service.domain.session.SessionId;
+import com.kontomatik.pko.service.domain.SessionId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;

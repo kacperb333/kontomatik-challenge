@@ -1,6 +1,6 @@
 package com.kontomatik.pko.service.scheduler;
 
-import com.kontomatik.pko.service.domain.accounts.AccountsImportScheduler;
+import com.kontomatik.pko.service.domain.AccountsImportScheduler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

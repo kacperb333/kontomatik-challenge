@@ -1,12 +1,11 @@
 package com.kontomatik.pko.service.api;
 
 import com.kontomatik.pko.lib.usecase.accounts.AccountInfo;
+import com.kontomatik.pko.lib.usecase.accounts.AccountsInfo;
 import com.kontomatik.pko.lib.usecase.login.Credentials;
 import com.kontomatik.pko.lib.usecase.login.Otp;
-import com.kontomatik.pko.service.domain.accounts.AccountsImportId;
-import com.kontomatik.pko.service.domain.accounts.AccountsService;
-import com.kontomatik.pko.service.domain.session.SessionId;
-import com.kontomatik.pko.service.domain.session.SessionService;
+import com.kontomatik.pko.service.domain.SessionId;
+import com.kontomatik.pko.service.domain.SessionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,18 +15,14 @@ import java.util.List;
 @RestController
 class PkoScraperController {
   private final SessionService sessionService;
-  private final AccountsService accountsService;
   private final SessionHeaderProvider sessionHeaderProvider;
-
   private static final String SESSION_HEADER = "x-session";
 
   PkoScraperController(
     SessionService sessionService,
-    AccountsService accountsService,
     SessionHeaderProvider sessionHeaderProvider
   ) {
     this.sessionService = sessionService;
-    this.accountsService = accountsService;
     this.sessionHeaderProvider = sessionHeaderProvider;
   }
 
@@ -53,23 +48,14 @@ class PkoScraperController {
       .build();
   }
 
-  @PostMapping("/import")
-  ResponseEntity<ImportAccountsResponse> importAccounts(
+  @GetMapping("/session/accounts")
+  ResponseEntity<AccountsInfoResponse> fetchSingleImport(
     @RequestHeader(SESSION_HEADER) SessionId sessionId
   ) {
-    var scheduleImportResult = accountsService.scheduleFetchAccountsInfo(sessionId);
-    return ResponseEntity.accepted()
-      .body(new ImportAccountsResponse(scheduleImportResult.accountsImportId().value()));
-  }
-
-  @GetMapping("/import")
-  ResponseEntity<AccountsInfoResponse> fetchSingleImport(@RequestParam AccountsImportId accountsImportId) {
-    return accountsService.fetchSingleImport(accountsImportId)
-      .map(it -> new AccountsInfoResponse(
-        it.accountsInfo().accounts()
-      ))
-      .map(ResponseEntity::ok)
-      .orElseGet(() -> ResponseEntity.notFound().build());
+    AccountsInfo importedAccountsInfo = sessionService.findSingleImport(sessionId);
+    return ResponseEntity.ok(
+      new AccountsInfoResponse(importedAccountsInfo.accounts())
+    );
   }
 
   private record CredentialsRequest(
@@ -79,11 +65,6 @@ class PkoScraperController {
 
   private record OtpRequest(
     Otp otp
-  ) {
-  }
-
-  private record ImportAccountsResponse(
-    String accountImportId
   ) {
   }
 

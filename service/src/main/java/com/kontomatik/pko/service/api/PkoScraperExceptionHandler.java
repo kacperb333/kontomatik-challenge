@@ -2,9 +2,7 @@ package com.kontomatik.pko.service.api;
 
 import com.kontomatik.pko.lib.client.PkoClient;
 import com.kontomatik.pko.lib.usecase.login.UnexpectedAction;
-import com.kontomatik.pko.service.domain.session.SessionLoginNotInProgress;
-import com.kontomatik.pko.service.domain.session.SessionNotInitialized;
-import com.kontomatik.pko.service.domain.session.SessionNotLoggedIn;
+import com.kontomatik.pko.service.domain.SessionNotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -34,30 +32,12 @@ class PkoScraperExceptionHandler {
     );
   }
 
-  @ExceptionHandler(SessionNotInitialized.class)
-  ResponseEntity<ErrorMessage> handle(SessionNotInitialized ex) {
+  @ExceptionHandler(SessionNotFound.class)
+  ResponseEntity<ErrorMessage> handle(SessionNotFound ex) {
     return warnAndRespond(
       ex,
-      "Session has not been initialized. Make sure proper x-session header is set",
-      HttpStatus.UNPROCESSABLE_ENTITY
-    );
-  }
-
-  @ExceptionHandler(SessionLoginNotInProgress.class)
-  ResponseEntity<ErrorMessage> handle(SessionLoginNotInProgress ex) {
-    return warnAndRespond(
-      ex,
-      "Session has no login in progress. Make sure proper x-session header is set",
-      HttpStatus.UNPROCESSABLE_ENTITY
-    );
-  }
-
-  @ExceptionHandler(SessionNotLoggedIn.class)
-  ResponseEntity<ErrorMessage> handle(SessionNotLoggedIn ex) {
-    return warnAndRespond(
-      ex,
-      "Session is not logged in to banking system. Make sure proper x-session header is set",
-      HttpStatus.UNPROCESSABLE_ENTITY
+      String.format("Session with id [%s] not found. Make sure proper x-session header is set", ex.sessionId.value()),
+      HttpStatus.NOT_FOUND
     );
   }
 

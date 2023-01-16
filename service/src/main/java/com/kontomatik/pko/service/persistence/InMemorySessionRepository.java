@@ -1,6 +1,6 @@
 package com.kontomatik.pko.service.persistence;
 
-import com.kontomatik.pko.service.domain.session.*;
+import com.kontomatik.pko.service.domain.*;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 class InMemorySessionRepository implements SessionRepository {
   private final ConcurrentMap<SessionId, LoginInProgressSession> inProgressSessions = new ConcurrentHashMap<>();
-  private final ConcurrentMap<SessionId, LoggedInSession> loggedInSessions = new ConcurrentHashMap<>();
   private final ConcurrentMap<SessionId, FinishedSession> finishedSessions = new ConcurrentHashMap<>();
 
   @Override
@@ -20,17 +19,8 @@ class InMemorySessionRepository implements SessionRepository {
   }
 
   @Override
-  public LoggedInSession save(LoggedInSession loggedInSession) {
-    var key = loggedInSession.sessionId();
-    inProgressSessions.remove(key);
-    loggedInSessions.put(key, loggedInSession);
-    return loggedInSession;
-  }
-
-  @Override
   public FinishedSession save(FinishedSession finishedSession) {
     var key = finishedSession.sessionId();
-    loggedInSessions.remove(key);
     finishedSessions.put(key, finishedSession);
     return finishedSession;
   }
@@ -41,17 +31,17 @@ class InMemorySessionRepository implements SessionRepository {
     if (inProgressSession != null) {
       return inProgressSession;
     } else {
-      throw new SessionLoginNotInProgress(sessionId);
+      throw new SessionNotFound(sessionId);
     }
   }
 
   @Override
-  public LoggedInSession getLoggedInSession(SessionId sessionId) {
-    LoggedInSession loggedInSession = loggedInSessions.get(sessionId);
-    if (loggedInSession != null) {
-      return loggedInSession;
+  public FinishedSession getFinishedSession(SessionId sessionId) {
+    FinishedSession finishedSession = finishedSessions.get(sessionId);
+    if (finishedSession != null) {
+      return finishedSession;
     } else {
-      throw new SessionNotLoggedIn(sessionId);
+      throw new SessionNotFound(sessionId);
     }
   }
 }

@@ -1,4 +1,4 @@
-package com.kontomatik.pko.service.domain.session;
+package com.kontomatik.pko.service.domain;
 
 import java.util.UUID;
 
