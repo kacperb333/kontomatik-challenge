@@ -22,9 +22,6 @@ class ThreadPoolAccountsImportScheduler implements AccountsImportScheduler {
     @Value("${accounts-import-scheduler.number-of-threads}") int numberOfThreads,
     @Value("${accounts-import-scheduler.timeout-minutes}") long timeoutMinutes
   ) {
-    if (numberOfThreads < 2) {
-      throw new IllegalArgumentException("Number of threads in ThreadPoolAccountsImportScheduler has to be at least 2 to avoid deadlock");
-    }
     this.executorService = Executors.newFixedThreadPool(numberOfThreads);
     this.timeoutMinutes = timeoutMinutes;
   }
@@ -36,7 +33,7 @@ class ThreadPoolAccountsImportScheduler implements AccountsImportScheduler {
 
   private void executeWithTimeoutPreservingInterruptedState(Runnable task) {
     try {
-      executorService.invokeAll(List.of(Executors.callable(task)), timeoutMinutes, TimeUnit.MINUTES);
+      Executors.newSingleThreadExecutor().invokeAll(List.of(Executors.callable(task)), timeoutMinutes, TimeUnit.MINUTES);
     } catch (InterruptedException e) {
       log.error("Scheduler interrupted while waiting for timeout", e);
       Thread.currentThread().interrupt();
