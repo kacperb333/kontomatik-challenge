@@ -4,5 +4,6 @@ pko-client:
 service:
   session-header: x-session
 
-scheduler:
+accounts-import-scheduler:
   number-of-threads: 10
+  timeout-minutes: 2

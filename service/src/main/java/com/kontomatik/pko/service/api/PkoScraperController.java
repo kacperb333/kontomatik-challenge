@@ -31,7 +31,7 @@ class PkoScraperController {
     this.sessionHeaderProvider = sessionHeaderProvider;
   }
 
-  @PostMapping("/session/login")
+  @PostMapping("/session")
   ResponseEntity<Void> logIn(
     @RequestBody CredentialsRequest request
   ) {

@@ -39,7 +39,7 @@ public class AccountsService {
   public ScheduledAccountsImport scheduleFetchAccountsInfo(SessionId sessionId) {
     var accountsImportId = AccountsImportIdGenerator.generate();
     sessionService.doWithinSession(sessionId, loggedInSession ->
-      accountsImportScheduler.submitTask(() -> importAccounts(accountsImportId, loggedInSession))
+      accountsImportScheduler.schedule(() -> importAccounts(accountsImportId, loggedInSession))
     );
     return new ScheduledAccountsImport(accountsImportId);
   }
@@ -50,6 +50,7 @@ public class AccountsService {
 
   private void importAccounts(AccountsImportId accountsImportId, LoggedInSession loggedInSession) {
     try {
+      Thread.sleep(20000);
       var accountsInfo = pkoScraperFacade.fetchAccountsInfo(loggedInSession.asLoggedInPkoSession());
       markSuccessImport(accountsImportId, accountsInfo);
     } catch (Exception e) {
