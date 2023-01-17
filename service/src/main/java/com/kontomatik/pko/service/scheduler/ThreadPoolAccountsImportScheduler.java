@@ -22,9 +22,9 @@ class ThreadPoolAccountsImportScheduler implements AccountsImportScheduler {
   private final long shutdownTimeoutSeconds;
 
   public ThreadPoolAccountsImportScheduler(
-    @Value("${accounts-import-scheduler.number-of-threads}") int numberOfThreads,
-    @Value("${accounts-import-scheduler.timeout-minutes}") long timeoutMinutes,
-    @Value("${accounts-import-scheduler.shutdown-timeout-seconds}") long shutdownTimeoutSeconds
+    @Value("${accounts-import.scheduler.number-of-threads}") int numberOfThreads,
+    @Value("${accounts-import.scheduler.timeout-minutes}") long timeoutMinutes,
+    @Value("${accounts-import.scheduler.shutdown-timeout-seconds}") long shutdownTimeoutSeconds
   ) {
     this.executorService = Executors.newFixedThreadPool(numberOfThreads);
     this.backingExecutorService = Executors.newCachedThreadPool();

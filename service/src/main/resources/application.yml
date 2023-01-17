@@ -8,7 +8,9 @@ spring:
 service:
   session-header: x-session
 
-accounts-import-scheduler:
-  number-of-threads: 10
-  timeout-minutes: 2
-  shutdown-timeout-seconds: 10
+accounts-import:
+  scheduler:
+    number-of-threads: 10
+    timeout-minutes: 2
+    shutdown-timeout-seconds: 10
+  retention-hours: 24
