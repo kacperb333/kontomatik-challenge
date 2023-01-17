@@ -11,13 +11,13 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 
 @Component
-class AccountsImportRetentionVerifier {
-  private static final Logger log = LoggerFactory.getLogger(AccountsImportRetentionVerifier.class);
+class SessionsRetentionVerifier {
+  private static final Logger log = LoggerFactory.getLogger(SessionsRetentionVerifier.class);
 
   private final MongoTemplate mongoTemplate;
   private final long allowedDataRetentionHours;
 
-  AccountsImportRetentionVerifier(
+  SessionsRetentionVerifier(
     MongoTemplate mongoTemplate,
     @Value("${accounts-import.retention-hours}") long allowedDataRetentionHours
   ) {
@@ -27,12 +27,12 @@ class AccountsImportRetentionVerifier {
 
   @PostConstruct
   private void verifyAccountsImportRetention() {
-    boolean ttlIndexPresent = mongoTemplate.indexOps(PersistentFinishedSession.class).getIndexInfo().stream()
+    boolean ttlIndexPresent = mongoTemplate.indexOps("sessions").getIndexInfo().stream()
       .anyMatch(it ->
-        isSingleFieldIndex(it) && isIndexForField(it, "createdAt") && isExpireAfter(it, Duration.ofHours(allowedDataRetentionHours))
+        isSingleFieldIndex(it) && isIndexForField(it, "persistedAt") && isExpireAfter(it, Duration.ofHours(allowedDataRetentionHours))
       );
     if (!ttlIndexPresent) {
-      log.error("No retention of accounts import data. Required {} hours of retention.", allowedDataRetentionHours);
+      log.error("No retention of stored sessions. Required {} hours of retention.", allowedDataRetentionHours);
     }
   }
 

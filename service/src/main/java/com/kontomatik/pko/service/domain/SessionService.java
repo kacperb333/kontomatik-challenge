@@ -4,7 +4,6 @@ import com.kontomatik.pko.lib.PkoScraperFacade;
 import com.kontomatik.pko.lib.usecase.accounts.AccountsInfo;
 import com.kontomatik.pko.lib.usecase.login.Credentials;
 import com.kontomatik.pko.lib.usecase.login.Otp;
-import com.kontomatik.pko.service.DateTimeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,18 +14,15 @@ public class SessionService {
   private final PkoScraperFacade pkoScraperFacade;
   private final SessionRepository sessionRepository;
   private final AccountsImportScheduler accountsImportScheduler;
-  private final DateTimeProvider dateTimeProvider;
 
   SessionService(
     PkoScraperFacade pkoScraperFacade,
     SessionRepository sessionRepository,
-    AccountsImportScheduler accountsImportScheduler,
-    DateTimeProvider dateTimeProvider
+    AccountsImportScheduler accountsImportScheduler
   ) {
     this.pkoScraperFacade = pkoScraperFacade;
     this.sessionRepository = sessionRepository;
     this.accountsImportScheduler = accountsImportScheduler;
-    this.dateTimeProvider = dateTimeProvider;
   }
 
   public LoginInProgressSession logIn(Credentials credentials) {
@@ -58,13 +54,12 @@ public class SessionService {
     try {
       AccountsInfo accountsInfo = pkoScraperFacade.fetchAccountsInfo(importInProgressSession.pkoSession());
       FinishedSession finishedSession = importInProgressSession.finishSuccessful(
-        dateTimeProvider.now(),
         accountsInfo
       );
       sessionRepository.save(finishedSession);
     } catch (Exception e) {
       log.error("Encountered exception during import", e);
-      FinishedSession finishedSession = importInProgressSession.finishFailed(dateTimeProvider.now());
+      FinishedSession finishedSession = importInProgressSession.finishFailed();
       sessionRepository.save(finishedSession);
     }
   }

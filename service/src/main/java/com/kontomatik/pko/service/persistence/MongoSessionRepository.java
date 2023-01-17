@@ -1,48 +1,53 @@
 package com.kontomatik.pko.service.persistence;
 
+import com.kontomatik.pko.service.DateTimeProvider;
 import com.kontomatik.pko.service.domain.*;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Repository;
 
 @Repository
 class MongoSessionRepository implements SessionRepository {
-
-  private final PersistentLoginInProgressSessionRepository loginInProgressSessionRepository;
-  private final PersistentFinishedSessionRepository finishedSessionRepository;
+  private final MongoOperations mongo;
+  private final DateTimeProvider dateTimeProvider;
 
   MongoSessionRepository(
-    PersistentLoginInProgressSessionRepository loginInProgressSessionRepository,
-    PersistentFinishedSessionRepository finishedSessionRepository
+    MongoOperations mongo,
+    DateTimeProvider dateTimeProvider
   ) {
-    this.loginInProgressSessionRepository = loginInProgressSessionRepository;
-    this.finishedSessionRepository = finishedSessionRepository;
+    this.mongo = mongo;
+    this.dateTimeProvider = dateTimeProvider;
   }
 
   @Override
   public LoginInProgressSession save(LoginInProgressSession loginInProgressSession) {
-    return loginInProgressSessionRepository.save(PersistentLoginInProgressSession.fromDomain(loginInProgressSession))
-      .toDomain();
+    var persistentSession = PersistentLoginInProgressSession.fromDomain(loginInProgressSession, dateTimeProvider.now());
+    return mongo.save(persistentSession).toDomain();
   }
 
   @Override
   public FinishedSession save(FinishedSession finishedSession) {
     var persistentSession = switch (finishedSession) {
-      case ImportFinishedSession s -> PersistentImportFinishedSession.fromDomain(s);
-      case ImportFailedSession s -> PersistentImportFailedSession.fromDomain(s);
+      case ImportFinishedSession s -> PersistentImportFinishedSession.fromDomain(s, dateTimeProvider.now());
+      case ImportFailedSession s -> PersistentImportFailedSession.fromDomain(s, dateTimeProvider.now());
     };
-    return finishedSessionRepository.save(persistentSession).toDomain();
+    return mongo.save(persistentSession).toDomain();
   }
 
   @Override
   public LoginInProgressSession getLoginInProgressSession(SessionId sessionId) {
-    return loginInProgressSessionRepository.findById(sessionId.value())
-      .map(PersistentLoginInProgressSession::toDomain)
-      .orElseThrow(() -> new SessionNotFound(sessionId));
+    var persistentSession = mongo.findById(sessionId.value(), PersistentLoginInProgressSession.class);
+    if (persistentSession == null) {
+      throw new SessionNotFound(sessionId);
+    }
+    return persistentSession.toDomain();
   }
 
   @Override
   public FinishedSession getFinishedSession(SessionId sessionId) {
-    return finishedSessionRepository.findById(sessionId.value())
-      .map(PersistentFinishedSession::toDomain)
-      .orElseThrow(() -> new SessionNotFound(sessionId));
+    var persistentSession = mongo.findById(sessionId.value(), PersistentFinishedSession.class);
+    if (persistentSession == null) {
+      throw new SessionNotFound(sessionId);
+    }
+    return persistentSession.toDomain();
   }
 }

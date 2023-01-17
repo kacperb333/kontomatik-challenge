@@ -7,25 +7,15 @@ import com.kontomatik.pko.lib.usecase.login.LoginInProgressPkoSession
 import com.kontomatik.pko.lib.usecase.login.PkoSessionId
 import com.kontomatik.pko.lib.usecase.login.Token
 import com.kontomatik.pko.service.IntegrationSpec
-import com.kontomatik.pko.service.domain.ImportFailedSession
-import com.kontomatik.pko.service.domain.ImportFinishedSession
-import com.kontomatik.pko.service.domain.LoginInProgressSession
-import com.kontomatik.pko.service.domain.SessionId
+import com.kontomatik.pko.service.domain.*
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Subject
-
-import java.time.Instant
-import java.time.ZonedDateTime
 
 class MongoSessionRepositoryIntSpec extends IntegrationSpec {
 
   @Subject
   @Autowired
   MongoSessionRepository repository
-
-  static Instant now() {
-    return ZonedDateTime.parse("2020-01-01T05:00:00+01:00").toInstant()
-  }
 
   static SessionId testSessionId() {
     return new SessionId("test-session-id")
@@ -55,7 +45,6 @@ class MongoSessionRepositoryIntSpec extends IntegrationSpec {
     given:
     ImportFinishedSession savedSession = new ImportFinishedSession(
       testSessionId(),
-      now(),
       new AccountsInfo([
         new AccountInfo("account-1", "31.00", "PLN"),
         new AccountInfo("account-2", "32.00", "USD")
@@ -71,12 +60,24 @@ class MongoSessionRepositoryIntSpec extends IntegrationSpec {
 
   def "should read saved import failed session"() {
     given:
-    ImportFailedSession savedSession = new ImportFailedSession(testSessionId(), now())
+    ImportFailedSession savedSession = new ImportFailedSession(testSessionId())
 
     and:
     repository.save(savedSession)
 
     expect:
     repository.getFinishedSession(testSessionId()) == savedSession
+  }
+
+  def "should save finished session after saving login in progress session"() {
+    given:
+    repository.save(new LoginInProgressSession(testSessionId(), testLoginInProgressPkoSession()))
+
+    and:
+    FinishedSession finishedSession = new ImportFailedSession(testSessionId())
+    repository.save(finishedSession)
+
+    expect:
+    repository.getFinishedSession(testSessionId()) == finishedSession
   }
 }

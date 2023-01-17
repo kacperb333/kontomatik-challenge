@@ -1,4 +1,4 @@
-db.finished_session.createIndex(
-    {"createdAt": 1},
+db.sessions.createIndex(
+    {"persistedAt": 1},
     {expireAfterSeconds: 86400}
 )

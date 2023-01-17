@@ -11,26 +11,26 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-@Document(collection = "finished_session")
+@Document(collection = "sessions")
 @TypeAlias("PersistentImportFinishedSession")
 class PersistentImportFinishedSession implements PersistentFinishedSession {
   @Id
   private final String sessionId;
-  private final Instant createdAt;
   private final AccountsInfo accountsInfo;
+  private final Instant persistedAt;
 
   @PersistenceCreator
-  PersistentImportFinishedSession(String sessionId, Instant createdAt, AccountsInfo accountsInfo) {
+  PersistentImportFinishedSession(String sessionId, AccountsInfo accountsInfo, Instant persistedAt) {
     this.sessionId = sessionId;
-    this.createdAt = createdAt;
     this.accountsInfo = accountsInfo;
+    this.persistedAt = persistedAt;
   }
 
-  static PersistentImportFinishedSession fromDomain(ImportFinishedSession domainSession) {
+  static PersistentImportFinishedSession fromDomain(ImportFinishedSession domainSession, Instant at) {
     return new PersistentImportFinishedSession(
       domainSession.sessionId().value(),
-      domainSession.createdAt(),
-      domainSession.accountsInfo()
+      domainSession.accountsInfo(),
+      at
     );
   }
 
@@ -38,7 +38,6 @@ class PersistentImportFinishedSession implements PersistentFinishedSession {
   public FinishedSession toDomain() {
     return new ImportFinishedSession(
       new SessionId(sessionId),
-      createdAt,
       accountsInfo
     );
   }

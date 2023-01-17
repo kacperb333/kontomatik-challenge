@@ -10,31 +10,30 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-@Document(collection = "finished_session")
+@Document(collection = "sessions")
 @TypeAlias("PersistentImportFailedSession")
 class PersistentImportFailedSession implements PersistentFinishedSession {
   @Id
   private final String sessionId;
-  private final Instant createdAt;
+  private final Instant persistedAt;
 
   @PersistenceCreator
-  PersistentImportFailedSession(String sessionId, Instant createdAt) {
+  PersistentImportFailedSession(String sessionId, Instant persistedAt) {
     this.sessionId = sessionId;
-    this.createdAt = createdAt;
+    this.persistedAt = persistedAt;
   }
 
-  static PersistentImportFailedSession fromDomain(ImportFailedSession domainSession) {
+  static PersistentImportFailedSession fromDomain(ImportFailedSession domainSession, Instant at) {
     return new PersistentImportFailedSession(
       domainSession.sessionId().value(),
-      domainSession.createdAt()
+      at
     );
   }
 
   @Override
   public FinishedSession toDomain() {
     return new ImportFailedSession(
-      new SessionId(sessionId),
-      createdAt
+      new SessionId(sessionId)
     );
   }
 }
