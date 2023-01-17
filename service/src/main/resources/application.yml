@@ -11,3 +11,4 @@ service:
 accounts-import-scheduler:
   number-of-threads: 10
   timeout-minutes: 2
+  shutdown-timeout-seconds: 10

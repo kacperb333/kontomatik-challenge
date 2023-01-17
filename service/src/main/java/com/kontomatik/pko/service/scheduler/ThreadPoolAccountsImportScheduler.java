@@ -19,21 +19,17 @@ class ThreadPoolAccountsImportScheduler implements AccountsImportScheduler {
   private final ExecutorService executorService;
   private final ExecutorService backingExecutorService;
   private final long timeoutMinutes;
+  private final long shutdownTimeoutSeconds;
 
   public ThreadPoolAccountsImportScheduler(
     @Value("${accounts-import-scheduler.number-of-threads}") int numberOfThreads,
-    @Value("${accounts-import-scheduler.timeout-minutes}") long timeoutMinutes
+    @Value("${accounts-import-scheduler.timeout-minutes}") long timeoutMinutes,
+    @Value("${accounts-import-scheduler.shutdown-timeout-seconds}") long shutdownTimeoutSeconds
   ) {
     this.executorService = Executors.newFixedThreadPool(numberOfThreads);
     this.backingExecutorService = Executors.newCachedThreadPool();
     this.timeoutMinutes = timeoutMinutes;
-  }
-
-  @PreDestroy
-  void shutdown() {
-    log.info("Gracefully shutting down ThreadPoolAccountsImportScheduler");
-    backingExecutorService.shutdown();
-    executorService.shutdown();
+    this.shutdownTimeoutSeconds = shutdownTimeoutSeconds;
   }
 
   @Override
@@ -48,5 +44,15 @@ class ThreadPoolAccountsImportScheduler implements AccountsImportScheduler {
       log.error("Scheduler interrupted while waiting for timeout", e);
       Thread.currentThread().interrupt();
     }
+  }
+
+  @PreDestroy
+  void shutdown() throws InterruptedException {
+    log.info("Gracefully shutting down ThreadPoolAccountsImportScheduler");
+    executorService.shutdown();
+    if (!executorService.awaitTermination(shutdownTimeoutSeconds, TimeUnit.SECONDS)) {
+      log.warn("Timed out while gracefully shutting down ThreadPoolAccountsImportScheduler");
+    }
+    backingExecutorService.shutdown();
   }
 }
