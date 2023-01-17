@@ -9,7 +9,7 @@ class MongoSessionRepository implements SessionRepository {
   private final PersistentLoginInProgressSessionRepository loginInProgressSessionRepository;
   private final PersistentFinishedSessionRepository finishedSessionRepository;
 
-  public MongoSessionRepository(
+  MongoSessionRepository(
     PersistentLoginInProgressSessionRepository loginInProgressSessionRepository,
     PersistentFinishedSessionRepository finishedSessionRepository
   ) {
@@ -25,12 +25,11 @@ class MongoSessionRepository implements SessionRepository {
 
   @Override
   public FinishedSession save(FinishedSession finishedSession) {
-    return switch (finishedSession) {
-      case ImportFinishedSession i ->
-        finishedSessionRepository.save(PersistentImportFinishedSession.fromDomain(i)).toDomain();
-      case ImportFailedSession i ->
-        finishedSessionRepository.save(PersistentImportFailedSession.fromDomain(i)).toDomain();
+    var persistentSession = switch (finishedSession) {
+      case ImportFinishedSession s -> PersistentImportFinishedSession.fromDomain(s);
+      case ImportFailedSession s -> PersistentImportFailedSession.fromDomain(s);
     };
+    return finishedSessionRepository.save(persistentSession).toDomain();
   }
 
   @Override

@@ -7,11 +7,14 @@ insert_final_newline = true
 [*.java]
 indent_style = space
 indent_size = 2
+max_line_length = 150
 
 [*.groovy]
 indent_style = space
 indent_size = 2
+max_line_length = 150
 
 [*.gradle]
 indent_style = space
 indent_size = 2
+max_line_length = 150
