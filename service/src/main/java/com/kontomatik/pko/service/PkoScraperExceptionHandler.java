@@ -1,4 +1,4 @@
-package com.kontomatik.pko.service.api;
+package com.kontomatik.pko.service;
 
 import com.kontomatik.pko.lib.client.PkoClient;
 import com.kontomatik.pko.lib.usecase.login.UnexpectedAction;

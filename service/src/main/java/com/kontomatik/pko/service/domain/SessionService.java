@@ -26,7 +26,7 @@ public class SessionService {
   }
 
   public LoginInProgressSession logIn(Credentials credentials) {
-    LoginInProgressSession loginInProgressSession = LoginInProgressSession.from(
+    LoginInProgressSession loginInProgressSession = new LoginInProgressSession(
       SessionIdGenerator.generate(),
       pkoScraperFacade.logIn(credentials)
     );
@@ -53,18 +53,18 @@ public class SessionService {
   private void importAccounts(ImportInProgressSession importInProgressSession) {
     try {
       AccountsInfo accountsInfo = pkoScraperFacade.fetchAccountsInfo(importInProgressSession.pkoSession());
-      FinishedSession finishedSession = importInProgressSession.finishSuccessful(
+      ImportFinishedSession finishedSession = importInProgressSession.finishSuccessful(
         accountsInfo
       );
       sessionRepository.save(finishedSession);
     } catch (Exception e) {
       log.error("Encountered exception during import", e);
-      FinishedSession finishedSession = importInProgressSession.finishFailed();
+      ImportFailedSession finishedSession = importInProgressSession.finishFailed();
       sessionRepository.save(finishedSession);
     }
   }
 
-  public AccountsInfo findSingleImport(SessionId sessionId) {
-    return sessionRepository.getFinishedSession(sessionId).accountsInfo();
+  public AccountsInfo getSessionAccountsInfo(SessionId sessionId) {
+    return sessionRepository.getSessionAccountsInfo(sessionId);
   }
 }

@@ -1,12 +1,16 @@
 package com.kontomatik.pko.service.domain;
 
+import com.kontomatik.pko.lib.usecase.accounts.AccountsInfo;
+
 public interface SessionRepository {
 
   LoginInProgressSession save(LoginInProgressSession loginInProgressSession);
 
-  FinishedSession save(FinishedSession finishedSession);
+  ImportFinishedSession save(ImportFinishedSession finishedSession);
+
+  ImportFailedSession save(ImportFailedSession importFailedSession);
 
   LoginInProgressSession getLoginInProgressSession(SessionId sessionId);
 
-  FinishedSession getFinishedSession(SessionId sessionId);
+  AccountsInfo getSessionAccountsInfo(SessionId sessionId);
 }

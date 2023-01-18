@@ -5,9 +5,6 @@ spring:
       port: 27017
       database: scraper-db
 
-service:
-  session-header: x-session
-
 accounts-import:
   scheduler:
     number-of-threads: 10

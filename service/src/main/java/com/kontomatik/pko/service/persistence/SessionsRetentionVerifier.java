@@ -28,20 +28,19 @@ class SessionsRetentionVerifier {
   @PostConstruct
   private void verifyAccountsImportRetention() {
     boolean ttlIndexPresent = mongoTemplate.indexOps("sessions").getIndexInfo().stream()
-      .anyMatch(it ->
-        isSingleFieldIndex(it) && isIndexForField(it, "persistedAt") && isExpireAfter(it, Duration.ofHours(allowedDataRetentionHours))
-      );
+      .anyMatch(it -> isSingleField(it) && isForField(it, "persistedAt") && isExpireAfter(it, Duration.ofHours(allowedDataRetentionHours)));
     if (!ttlIndexPresent) {
       log.error("No retention of stored sessions. Required {} hours of retention.", allowedDataRetentionHours);
     }
   }
 
-  private static boolean isSingleFieldIndex(IndexInfo index) {
+  private static boolean isSingleField(IndexInfo index) {
     return index.getIndexFields().size() == 1;
   }
 
-  private static boolean isIndexForField(IndexInfo index, String field) {
-    return index.getIndexFields().stream().anyMatch(it -> it.getKey().equals(field));
+  private static boolean isForField(IndexInfo index, String field) {
+    return index.getIndexFields().stream()
+      .anyMatch(it -> it.getKey().equals(field));
   }
 
   private static boolean isExpireAfter(IndexInfo index, Duration allowedRetention) {

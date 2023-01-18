@@ -1,4 +1,4 @@
-package com.kontomatik.pko.service;
+package com.kontomatik.pko.service.common;
 
 import org.springframework.stereotype.Component;
 
