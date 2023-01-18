@@ -1,9 +1,9 @@
 package com.kontomatik.pko.service;
 
 import com.kontomatik.pko.lib.usecase.accounts.AccountInfo;
-import com.kontomatik.pko.lib.usecase.accounts.AccountsInfo;
 import com.kontomatik.pko.lib.usecase.login.Credentials;
 import com.kontomatik.pko.lib.usecase.login.Otp;
+import com.kontomatik.pko.service.domain.AccountsImport;
 import com.kontomatik.pko.service.domain.SessionId;
 import com.kontomatik.pko.service.domain.SessionService;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 class PkoScraperController {
   private final SessionService sessionService;
-  private static final String SESSION_HEADER = "x-session";
+  static final String SESSION_HEADER = "x-session";
 
   PkoScraperController(
     SessionService sessionService
@@ -50,9 +50,9 @@ class PkoScraperController {
   ResponseEntity<AccountsInfoResponse> fetchSingleImport(
     @RequestHeader(SESSION_HEADER) SessionId sessionId
   ) {
-    AccountsInfo importedAccountsInfo = sessionService.getSessionAccountsInfo(sessionId);
+    AccountsImport importedAccountsInfo = sessionService.getSessionAccountsImport(sessionId);
     return ResponseEntity.ok(
-      new AccountsInfoResponse(importedAccountsInfo.accounts())
+      new AccountsInfoResponse(importedAccountsInfo.isFailed(), importedAccountsInfo.data().accounts())
     );
   }
 
@@ -73,6 +73,7 @@ class PkoScraperController {
   }
 
   private record AccountsInfoResponse(
+    boolean isFailed,
     List<AccountInfo> accounts
   ) {
   }

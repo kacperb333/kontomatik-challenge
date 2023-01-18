@@ -12,5 +12,5 @@ public interface SessionRepository {
 
   LoginInProgressSession getLoginInProgressSession(SessionId sessionId);
 
-  AccountsInfo getSessionAccountsInfo(SessionId sessionId);
+  AccountsImport getSessionAccountsImport(SessionId sessionId);
 }

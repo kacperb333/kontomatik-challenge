@@ -1,5 +1,6 @@
 package com.kontomatik.pko.service;
 
+import com.kontomatik.pko.lib.PkoScraperFacade;
 import com.kontomatik.pko.lib.client.PkoClient;
 import com.kontomatik.pko.lib.usecase.login.UnexpectedAction;
 import com.kontomatik.pko.service.domain.SessionNotFound;
@@ -29,6 +30,15 @@ class PkoScraperExceptionHandler {
       ex,
       "Unexpected action in login flow, please login to your banking system manually in order to clear any required actions during login (e.g. popup notification windows)",
       HttpStatus.SERVICE_UNAVAILABLE
+    );
+  }
+
+  @ExceptionHandler(PkoScraperFacade.LoginFailed.class)
+  ResponseEntity<ErrorMessage> handle(PkoScraperFacade.LoginFailed ex) {
+    return warnAndRespond(
+      ex,
+      String.format("Login failed: %s", ex.getMessage()),
+      HttpStatus.UNPROCESSABLE_ENTITY
     );
   }
 

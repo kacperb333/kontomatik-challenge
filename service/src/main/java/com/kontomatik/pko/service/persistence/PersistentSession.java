@@ -20,6 +20,7 @@ class PersistentSession {
   final SessionId sessionId;
   final LoginInProgressPkoSession pkoSession;
   final AccountsInfo accountsInfo;
+  final boolean isFailed;
   final Instant persistedAt;
 
   @PersistenceCreator
@@ -27,11 +28,13 @@ class PersistentSession {
     SessionId sessionId,
     LoginInProgressPkoSession pkoSession,
     AccountsInfo accountsInfo,
+    boolean isFailed,
     Instant persistedAt
   ) {
     this.sessionId = sessionId;
     this.pkoSession = pkoSession;
     this.accountsInfo = accountsInfo;
+    this.isFailed = isFailed;
     this.persistedAt = persistedAt;
   }
 
@@ -40,6 +43,7 @@ class PersistentSession {
       domainSession.sessionId(),
       domainSession.pkoSession(),
       AccountsInfo.EMPTY,
+      false,
       at
     );
   }
@@ -49,6 +53,7 @@ class PersistentSession {
       domainSession.sessionId(),
       null,
       domainSession.accountsInfo(),
+      false,
       at
     );
   }
@@ -58,6 +63,7 @@ class PersistentSession {
       domainSession.sessionId(),
       null,
       AccountsInfo.EMPTY,
+      true,
       at
     );
   }

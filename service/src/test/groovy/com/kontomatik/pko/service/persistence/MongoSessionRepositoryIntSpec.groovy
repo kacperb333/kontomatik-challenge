@@ -41,24 +41,25 @@ class MongoSessionRepositoryIntSpec extends IntegrationSpec {
 
   def "should throw SessionNotFound when getting accounts info for nonexistent session"() {
     when:
-    repository.getSessionAccountsInfo(new SessionId("nonexistent"))
+    repository.getSessionAccountsImport(new SessionId("nonexistent"))
 
     then:
     thrown(SessionNotFound)
   }
 
-  def "should read accounts info for every type of saved session"() {
+  def "should read accounts import data for every type of saved session"() {
     when:
     repository.save(testSavedSession)
 
     then:
-    repository.getSessionAccountsInfo(testSessionId()) == expectedAccountsInfoRead
+    repository.getSessionAccountsImport(testSessionId()).data() == expectedAccountsInfoRead
+    repository.getSessionAccountsImport(testSessionId()).isFailed() == expectedFailed
 
     where:
-    testSavedSession                                                             || expectedAccountsInfoRead
-    new LoginInProgressSession(testSessionId(), testLoginInProgressPkoSession()) || AccountsInfo.EMPTY
-    new ImportFailedSession(testSessionId())                                     || AccountsInfo.EMPTY
-    new ImportFinishedSession(testSessionId(), testAccountsInfo())               || testAccountsInfo()
+    testSavedSession                                                             || expectedAccountsInfoRead || expectedFailed
+    new LoginInProgressSession(testSessionId(), testLoginInProgressPkoSession()) || AccountsInfo.EMPTY       || false
+    new ImportFailedSession(testSessionId())                                     || AccountsInfo.EMPTY       || true
+    new ImportFinishedSession(testSessionId(), testAccountsInfo())               || testAccountsInfo()       || false
   }
 
   def "should throw SessionNotFound when looking for login in progress session, after saving finished session with the same id"() {

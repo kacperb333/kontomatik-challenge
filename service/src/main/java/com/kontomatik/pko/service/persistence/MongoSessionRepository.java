@@ -50,11 +50,11 @@ class MongoSessionRepository implements SessionRepository {
   }
 
   @Override
-  public AccountsInfo getSessionAccountsInfo(SessionId sessionId) {
+  public AccountsImport getSessionAccountsImport(SessionId sessionId) {
     var persistentSession = mongo.findById(sessionId, PersistentSession.class);
     if (persistentSession == null) {
       throw new SessionNotFound(sessionId);
     }
-    return persistentSession.accountsInfo;
+    return new AccountsImport(persistentSession.isFailed, persistentSession.accountsInfo);
   }
 }

@@ -64,7 +64,7 @@ public class SessionService {
     }
   }
 
-  public AccountsInfo getSessionAccountsInfo(SessionId sessionId) {
-    return sessionRepository.getSessionAccountsInfo(sessionId);
+  public AccountsImport getSessionAccountsImport(SessionId sessionId) {
+    return sessionRepository.getSessionAccountsImport(sessionId);
   }
 }
