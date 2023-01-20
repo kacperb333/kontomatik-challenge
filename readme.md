@@ -69,7 +69,7 @@ After accounts data has been imported successfully returns (example):
 ```
 
 # How to setup database
-Install mongodb-community@6.0 and run script `service/src/main/resources/mongo/init-database` in order to provide 24h retention of imported account data.
+Install ```mongodb-community@6.0``` and run script `service/src/main/resources/mongo/init-database` in order to provide 24h retention of imported account data.
 
 # How to build and run?
 ```./gradlew clean build``` in order to perform clean build of application.
