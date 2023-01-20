@@ -57,18 +57,18 @@ class IntegrationSpec extends Specification {
     String url,
     String request = ""
   ) {
-    return handleRestClientResponseExceptions({
+    return handleRestClientResponseExceptions {
       restTemplate.exchange("http://localhost:$port/$url", HttpMethod.POST, new HttpEntity(request, httpHeaders(headers)), String.class)
-    })
+    }
   }
 
   protected HttpResponseWrapper get(
     Map<String, String> headers,
     String url
   ) {
-    return handleRestClientResponseExceptions({
+    return handleRestClientResponseExceptions {
       restTemplate.exchange("http://localhost:$port/$url", HttpMethod.GET, new HttpEntity(httpHeaders(headers)), String.class)
-    })
+    }
   }
 
   private HttpResponseWrapper handleRestClientResponseExceptions(Closure<ResponseEntity<String>> closure) {
