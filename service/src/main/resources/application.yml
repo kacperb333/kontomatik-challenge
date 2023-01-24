@@ -11,4 +11,8 @@ accounts-import:
     number-of-threads: 10
     timeout-minutes: 2
     shutdown-timeout-seconds: 10
-  retention-hours: 24
+
+logging:
+  level:
+    org.apache.http:
+      wire: DEBUG
