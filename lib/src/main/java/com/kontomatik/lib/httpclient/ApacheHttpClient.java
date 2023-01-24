@@ -1,7 +1,9 @@
 package com.kontomatik.lib.httpclient;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.kontomatik.lib.GsonUtils;
-import com.kontomatik.lib.ScraperHttpClient;
+import com.kontomatik.lib.HttpClient;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -19,15 +21,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-public class ScraperApacheHttpClient implements ScraperHttpClient {
-  private static final Logger log = LoggerFactory.getLogger(ScraperApacheHttpClient.class);
+public class ApacheHttpClient implements HttpClient {
+  private static final Logger log = LoggerFactory.getLogger(ApacheHttpClient.class);
   private final HttpClientBuilder apacheClientBuilder;
   private final String baseUrl;
 
-  public ScraperApacheHttpClient(
+  public ApacheHttpClient(
     String baseUrl,
     HttpClientBuilder apacheClientBuilder
   ) {
@@ -36,9 +37,8 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
   }
 
   @Override
-  public <T> T post(String url, PostRequest request, BiFunction<Map<String, String>, String, T> jsonResponseWithHeadersHandler) {
-    HttpPost httpPost = preparePost(url, request);
-    return handle(httpPost, jsonResponseWithHeadersHandler);
+  public Response post(String url, PostRequest request) {
+    return doPost(preparePost(url, request));
   }
 
   private HttpPost preparePost(String url, PostRequest request) {
@@ -48,19 +48,12 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
     return httpPost;
   }
 
-  private <T> T handle(HttpUriRequest httpRequest, BiFunction<Map<String, String>, String, T> jsonResponseWithHeaders) {
+  private Response doPost(HttpUriRequest httpRequest) {
     try (
       CloseableHttpClient httpClient = buildClient();
       CloseableHttpResponse httpResponse = doExecute(httpClient, httpRequest)
     ) {
-      String jsonResponseBody = asJson(httpResponse.getEntity());
-      Map<String, String> responseHeaders = asNormalizedHeaders(httpResponse.getAllHeaders());
-      try {
-        return jsonResponseWithHeaders.apply(responseHeaders, jsonResponseBody);
-      } catch (Exception e) {
-        logErrorRequest(httpRequest, responseHeaders, jsonResponseBody);
-        throw e;
-      }
+      return new ApacheHttpResponse(httpResponse.getAllHeaders(), httpResponse.getEntity());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -70,39 +63,12 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
     return apacheClientBuilder.build();
   }
 
-  private static Map<String, String> asNormalizedHeaders(Header[] headers) {
-    return Arrays.stream(headers)
-      .collect(Collectors.toMap((it -> it.getName().toLowerCase()), NameValuePair::getValue));
-  }
-
   private static CloseableHttpResponse doExecute(CloseableHttpClient httpClient, HttpUriRequest httpUriRequest) {
     return uncheck(() -> httpClient.execute(httpUriRequest));
   }
 
-  private static String asJson(HttpEntity httpEntity) {
-    return uncheck(() -> EntityUtils.toString(httpEntity));
-  }
-
   private static StringEntity asStringEntity(Object entity) {
     return uncheck(() -> new StringEntity(GsonUtils.toJson(entity)));
-  }
-
-
-  private static void logErrorRequest(HttpUriRequest request, Map<String, String> responseHeaders, String responseBody) {
-    String lineSeparator = System.lineSeparator();
-    log.error(
-      "Failed Request:"
-        + lineSeparator
-        + String.format("%s : %s", request.getMethod(), request.getURI())
-        + lineSeparator
-        + "Response Headers:"
-        + lineSeparator
-        + responseHeaders.toString()
-        + lineSeparator
-        + "Response Body:"
-        + lineSeparator
-        + responseBody
-    );
   }
 
   private static <T> T uncheck(Callable<T> toRun) {
@@ -112,4 +78,40 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
       throw new RuntimeException(e);
     }
   }
+
+  static class ApacheHttpResponse implements Response {
+    private final Map<String, String> headers;
+    private final JsonObject jsonEntity;
+
+
+    ApacheHttpResponse(Header[] headers, HttpEntity httpEntity) {
+      this.headers = asNormalizedHeaders(headers);
+      this.jsonEntity = asJson(httpEntity);
+    }
+
+    private static Map<String, String> asNormalizedHeaders(Header[] headers) {
+      return Arrays.stream(headers)
+        .collect(Collectors.toMap((it -> it.getName().toLowerCase()), NameValuePair::getValue));
+    }
+
+    private static JsonObject asJson(HttpEntity httpEntity) {
+      return uncheck(() -> GsonUtils.parseToObject(EntityUtils.toString(httpEntity)));
+    }
+
+    @Override
+    public String getHeader(String headerName) {
+      return headers.get(headerName);
+    }
+
+    @Override
+    public String extractString(String path) {
+      return GsonUtils.extractString(jsonEntity, path);
+    }
+
+    @Override
+    public Map<String, JsonElement> extractMap(String... path) {
+      return GsonUtils.extractMap(jsonEntity, path);
+    }
+  }
+
 }

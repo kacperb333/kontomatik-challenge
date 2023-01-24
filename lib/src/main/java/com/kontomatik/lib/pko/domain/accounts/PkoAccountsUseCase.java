@@ -3,31 +3,29 @@ package com.kontomatik.lib.pko.domain.accounts;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kontomatik.lib.GsonUtils;
-import com.kontomatik.lib.ScraperHttpClient;
+import com.kontomatik.lib.HttpClient;
 import com.kontomatik.lib.pko.domain.PkoConstants;
 import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession;
 
 import java.util.Map;
 
 public class PkoAccountsUseCase {
-  private final ScraperHttpClient httpClient;
+  private final HttpClient httpClient;
 
-  public PkoAccountsUseCase(ScraperHttpClient httpClient) {
+  public PkoAccountsUseCase(HttpClient httpClient) {
     this.httpClient = httpClient;
   }
 
   public Accounts fetchAccounts(LoggedInPkoSession loggedInPkoSession) {
-    ScraperHttpClient.PostRequest postRequest = prepareAccountsRequest(loggedInPkoSession);
-    return httpClient.post("/init", postRequest, (responseHeaders, jsonResponse) -> {
-      JsonObject response = GsonUtils.parseToObject(jsonResponse);
-      Map<String, JsonElement> accounts = GsonUtils.extractMap(response, "response", "data", "accounts");
-      return parseAccounts(accounts);
-    });
+    HttpClient.PostRequest postRequest = prepareAccountsRequest(loggedInPkoSession);
+    HttpClient.Response response = httpClient.post("/init", postRequest);
+    Map<String, JsonElement> accounts = response.extractMap("response", "data", "accounts");
+    return parseAccounts(accounts);
   }
 
-  private static ScraperHttpClient.PostRequest prepareAccountsRequest(LoggedInPkoSession loggedInPkoSession) {
+  private static HttpClient.PostRequest prepareAccountsRequest(LoggedInPkoSession loggedInPkoSession) {
     AccountsRequest accountsRequest = AccountsRequest.newRequest();
-    return new ScraperHttpClient.PostRequest(
+    return new HttpClient.PostRequest(
       Map.of(
         "accept", "application/json",
         PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loggedInPkoSession)
