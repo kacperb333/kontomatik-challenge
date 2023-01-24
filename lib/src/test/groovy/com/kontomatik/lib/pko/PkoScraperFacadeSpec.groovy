@@ -17,7 +17,7 @@ class PkoScraperFacadeSpec extends Specification {
   PkoApiFixtures pkoApi = new PkoApiFixtures(new WireMockServer(8090))
 
   @Subject
-  PkoScraperFacade pkoScraperFacade = PkoScraperFacadeFactory.pkoScraperFacade("http://localhost:8090/ipko3")
+  PkoScraperFacade pkoScraperFacade = PkoScraperFacade.pkoScraperFacade("http://localhost:8090/ipko3")
 
   def setup() {
     pkoApi.start()
