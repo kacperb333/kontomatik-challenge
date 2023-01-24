@@ -9,6 +9,7 @@ import com.kontomatik.service.pko.domain.SessionId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -21,6 +22,7 @@ class PersistentSession {
   final LoginInProgressPkoSession pkoSession;
   final AccountsInfo accountsInfo;
   final boolean isFailed;
+  @Indexed(expireAfter = "24h")
   final Instant persistedAt;
 
   @PersistenceCreator

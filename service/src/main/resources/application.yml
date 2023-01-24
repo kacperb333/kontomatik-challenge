@@ -4,6 +4,7 @@ spring:
       host: localhost
       port: 27017
       database: scraper-db
+      auto-index-creation: true
 
 accounts-import:
   scheduler:
