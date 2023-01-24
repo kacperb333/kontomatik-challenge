@@ -2,24 +2,24 @@ package com.kontomatik.lib.pko;
 
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.accounts.PkoAccountsUseCase;
-import com.kontomatik.lib.pko.domain.login.*;
+import com.kontomatik.lib.pko.domain.signin.*;
 
 public class PkoScraperFacade {
 
-  private final PkoLoginUseCase pkoLoginUseCase;
+  private final PkoSignInUseCase pkoSignInUseCase;
   private final PkoAccountsUseCase pkoAccountsUseCase;
 
-  PkoScraperFacade(PkoLoginUseCase pkoLoginUseCase, PkoAccountsUseCase pkoAccountsUseCase) {
-    this.pkoLoginUseCase = pkoLoginUseCase;
+  PkoScraperFacade(PkoSignInUseCase pkoSignInUseCase, PkoAccountsUseCase pkoAccountsUseCase) {
+    this.pkoSignInUseCase = pkoSignInUseCase;
     this.pkoAccountsUseCase = pkoAccountsUseCase;
   }
 
-  public LoginInProgressPkoSession logIn(Credentials credentials) {
-    return pkoLoginUseCase.logIn(credentials);
+  public OtpRequiredPkoSession signIn(Credentials credentials) {
+    return pkoSignInUseCase.signIn(credentials);
   }
 
-  public LoggedInPkoSession inputOtp(LoginInProgressPkoSession inProgressSession, Otp otp) {
-    return pkoLoginUseCase.inputOtp(inProgressSession, otp);
+  public LoggedInPkoSession inputOtp(OtpRequiredPkoSession otpRequiredPkoSession, Otp otp) {
+    return pkoSignInUseCase.inputOtp(otpRequiredPkoSession, otp);
   }
 
   public Accounts fetchAccounts(LoggedInPkoSession loggedInSession) {

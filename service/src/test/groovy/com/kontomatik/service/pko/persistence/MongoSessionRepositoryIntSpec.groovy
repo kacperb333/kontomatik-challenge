@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Subject
 
 import static com.kontomatik.service.pko.PkoLibFactories.testAccounts
-import static com.kontomatik.service.pko.PkoLibFactories.testLoginInProgressPkoSession
+import static com.kontomatik.service.pko.PkoLibFactories.testOtpRequiredPkoSession
 
 class MongoSessionRepositoryIntSpec extends IntegrationSpec {
 
@@ -20,20 +20,20 @@ class MongoSessionRepositoryIntSpec extends IntegrationSpec {
     return new SessionId("test-session-id")
   }
 
-  def "should read saved login in progress session"() {
+  def "should read saved otp required session"() {
     given:
-    LoginInProgressSession savedSession = new LoginInProgressSession(testSessionId(), testLoginInProgressPkoSession())
+    OtpRequiredSession savedSession = new OtpRequiredSession(testSessionId(), testOtpRequiredPkoSession())
 
     when:
     repository.save(savedSession)
 
     then:
-    repository.getLoginInProgressSession(testSessionId()) == savedSession
+    repository.getOtpRequiredSession(testSessionId()) == savedSession
   }
 
-  def "should throw SessionNotFound when getting nonexistent login in progress session"() {
+  def "should throw SessionNotFound when getting nonexistent otp required session"() {
     when:
-    repository.getLoginInProgressSession(new SessionId("nonexistent"))
+    repository.getOtpRequiredSession(new SessionId("nonexistent"))
 
     then:
     thrown(SessionNotFound)
@@ -57,20 +57,20 @@ class MongoSessionRepositoryIntSpec extends IntegrationSpec {
 
     where:
     testSavedSession                                                             || expectedAccountsRead || expectedFailed
-    new LoginInProgressSession(testSessionId(), testLoginInProgressPkoSession()) || Accounts.EMPTY       || false
+    new OtpRequiredSession(testSessionId(), testOtpRequiredPkoSession()) || Accounts.EMPTY || false
     new ImportFailedSession(testSessionId())                                     || Accounts.EMPTY       || true
     new ImportFinishedSession(testSessionId(), testAccounts())                   || testAccounts()       || false
   }
 
-  def "should throw SessionNotFound when looking for login in progress session, after saving finished session with the same id"() {
+  def "should throw SessionNotFound when looking for otp required session, after saving finished session with the same id"() {
     given:
-    repository.save(new LoginInProgressSession(testSessionId(), testLoginInProgressPkoSession()))
+    repository.save(new OtpRequiredSession(testSessionId(), testOtpRequiredPkoSession()))
 
     and:
     repository.save(testFinishedSession)
 
     when:
-    repository.getLoginInProgressSession(testSessionId())
+    repository.getOtpRequiredSession(testSessionId())
 
     then:
     thrown(SessionNotFound)

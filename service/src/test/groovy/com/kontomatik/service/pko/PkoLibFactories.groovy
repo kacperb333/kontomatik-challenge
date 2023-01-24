@@ -2,15 +2,15 @@ package com.kontomatik.service.pko
 
 import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
-import com.kontomatik.lib.pko.domain.login.*
+import com.kontomatik.lib.pko.domain.signin.*
 
 class PkoLibFactories {
   static PkoSessionId testPkoSessionId() {
     return new PkoSessionId("test-pko-session-id")
   }
 
-  static LoginInProgressPkoSession testLoginInProgressPkoSession() {
-    return new LoginInProgressPkoSession(
+  static OtpRequiredPkoSession testOtpRequiredPkoSession() {
+    return new OtpRequiredPkoSession(
       testPkoSessionId(),
       new FlowId("test-flow-id"),
       new Token("test-token")

@@ -2,8 +2,8 @@ package com.kontomatik.service.pko;
 
 import com.kontomatik.lib.pko.domain.accounts.Account;
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
-import com.kontomatik.lib.pko.domain.login.Credentials;
-import com.kontomatik.lib.pko.domain.login.Otp;
+import com.kontomatik.lib.pko.domain.signin.Credentials;
+import com.kontomatik.lib.pko.domain.signin.Otp;
 import com.kontomatik.service.pko.domain.AccountsImport;
 import com.kontomatik.service.pko.domain.SessionId;
 import com.kontomatik.service.pko.domain.SessionService;
@@ -26,10 +26,10 @@ class PkoScraperController {
   }
 
   @PostMapping("/session")
-  ResponseEntity<Void> logIn(
+  ResponseEntity<Void> signIn(
     @RequestBody CredentialsRequest request
   ) {
-    var logInResult = sessionService.logIn(request.credentials());
+    var logInResult = sessionService.signIn(request.credentials());
     return ResponseEntity.ok()
       .headers(sessionHeader(logInResult.sessionId()))
       .build();

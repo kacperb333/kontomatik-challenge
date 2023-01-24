@@ -3,8 +3,8 @@ package com.kontomatik.service.pko
 import com.kontomatik.lib.pko.PkoScraperFacade
 import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
-import com.kontomatik.lib.pko.domain.login.Credentials
-import com.kontomatik.lib.pko.domain.login.Otp
+import com.kontomatik.lib.pko.domain.signin.Credentials
+import com.kontomatik.lib.pko.domain.signin.Otp
 import com.kontomatik.service.HttpResponseWrapper
 import com.kontomatik.service.IntegrationSpec
 import groovy.json.JsonSlurper
@@ -25,7 +25,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
 
   def "should log in and fetch accounts info on successful scraper facade invocations"() {
     given:
-    stubScraperLogIn("test-login", "test-password")
+    stubScraperSignIn("test-login", "test-password")
     stubScraperOtp("test-otp")
     stubScrapperAccounts {
       new Accounts([
@@ -54,7 +54,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     }
 
     when:
-    HttpResponseWrapper logInResponse = postLogIn("test-login", "test-password")
+    HttpResponseWrapper logInResponse = postSignIn("test-login", "test-password")
 
     then:
     logInResponse.statusCode == HttpStatus.OK
@@ -93,7 +93,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     CountDownLatch importLatch = new CountDownLatch(1)
 
     and:
-    stubScraperLogIn("test-login", "test-password")
+    stubScraperSignIn("test-login", "test-password")
     stubScraperOtp("test-otp")
     stubScrapperAccounts {
       importLatch.await()
@@ -101,10 +101,10 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     }
 
     and:
-    HttpResponseWrapper logInResponse = postLogIn("test-login", "test-password")
+    HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
 
     and:
-    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(logInResponse))
+    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(signInResponse))
 
     when:
     HttpResponseWrapper emptyAccountsResponse = getAccounts(extractSessionId(otpResponse))
@@ -130,17 +130,17 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     }
   }
 
-  def "should return login failed response with proper information for the user in case login fails"() {
+  def "should return login failed response with proper information for the user in case sign in fails"() {
     given:
     String messageForUser = "Some important login and password message for the user to see"
-    stubScraperLogIn("test-login", "test-password") { throw new PkoScraperFacade.LoginFailed(messageForUser) }
+    stubScraperSignIn("test-login", "test-password") { throw new PkoScraperFacade.LoginFailed(messageForUser) }
 
     when:
-    HttpResponseWrapper loginResponse = postLogIn("test-login", "test-password")
+    HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
 
     then:
-    loginResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
-    with(new JsonSlurper().parseText(loginResponse.body)) {
+    signInResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
+    with(new JsonSlurper().parseText(signInResponse.body)) {
       it.code == "LoginFailed"
       it.message.contains(messageForUser)
     }
@@ -149,14 +149,14 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
   def "should return login failed response with proper information for the user in case otp input fails"() {
     given:
     String messageForUser = "Some important otp message for the user to see"
-    stubScraperLogIn("test-login", "test-password")
+    stubScraperSignIn("test-login", "test-password")
     stubScraperOtp("test-otp") { throw new PkoScraperFacade.LoginFailed(messageForUser) }
 
     when:
-    HttpResponseWrapper loginResponse = postLogIn("test-login", "test-password")
+    HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
 
     and:
-    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(loginResponse))
+    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(signInResponse))
 
     then:
     otpResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
@@ -168,14 +168,14 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
 
   def "should return internal sever error on unexpected exception"() {
     given:
-    stubScraperLogIn("test-login", "test-password")
+    stubScraperSignIn("test-login", "test-password")
     stubScraperOtp("test-otp") { throw new PkoScraperFacade.PkoScraperFacadeBug(new RuntimeException("Something went wrong")) }
 
     when:
-    HttpResponseWrapper loginResponse = postLogIn("test-login", "test-password")
+    HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
 
     and:
-    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(loginResponse))
+    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(signInResponse))
 
     then:
     otpResponse.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
@@ -186,15 +186,15 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
 
   def "should return info about failed import when accounts import fails for any reason"() {
     given:
-    stubScraperLogIn("test-login", "test-password")
+    stubScraperSignIn("test-login", "test-password")
     stubScraperOtp("test-otp")
     stubScrapperAccounts { throw new RuntimeException("Something went wrong") }
 
     when:
-    HttpResponseWrapper loginResponse = postLogIn("test-login", "test-password")
+    HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
 
     and:
-    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(loginResponse))
+    HttpResponseWrapper otpResponse = postOtp("test-otp", extractSessionId(signInResponse))
 
     then:
     poll.eventually {
@@ -207,19 +207,19 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     }
   }
 
-  private void stubScraperLogIn(
+  private void stubScraperSignIn(
     String login,
     String password,
-    Closure logInClosure = { testLoginInProgressPkoSession() }
+    Closure logInClosure = { testOtpRequiredPkoSession() }
   ) {
-    pkoScraperFacade.logIn(new Credentials(login, password)) >> { logInClosure() }
+    pkoScraperFacade.signIn(new Credentials(login, password)) >> { logInClosure() }
   }
 
   private void stubScraperOtp(
     String otp,
     Closure otpClosure = { testLoggedInPkoSession() }
   ) {
-    pkoScraperFacade.inputOtp(testLoginInProgressPkoSession(), new Otp(otp)) >> { otpClosure() }
+    pkoScraperFacade.inputOtp(testOtpRequiredPkoSession(), new Otp(otp)) >> { otpClosure() }
   }
 
   private void stubScrapperAccounts(
@@ -228,7 +228,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     pkoScraperFacade.fetchAccounts(testLoggedInPkoSession()) >> { accountsClosure() }
   }
 
-  private HttpResponseWrapper postLogIn(String login, String password) {
+  private HttpResponseWrapper postSignIn(String login, String password) {
     return post(
       [
         "content-type": "application/json"

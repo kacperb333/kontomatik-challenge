@@ -2,8 +2,8 @@ package com.kontomatik.service.pko.domain;
 
 import com.kontomatik.lib.pko.PkoScraperFacade;
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
-import com.kontomatik.lib.pko.domain.login.Credentials;
-import com.kontomatik.lib.pko.domain.login.Otp;
+import com.kontomatik.lib.pko.domain.signin.Credentials;
+import com.kontomatik.lib.pko.domain.signin.Otp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,19 +25,19 @@ public class SessionService {
     this.accountsImportScheduler = accountsImportScheduler;
   }
 
-  public LoginInProgressSession logIn(Credentials credentials) {
-    LoginInProgressSession loginInProgressSession = new LoginInProgressSession(
+  public OtpRequiredSession signIn(Credentials credentials) {
+    OtpRequiredSession otpRequiredSession = new OtpRequiredSession(
       SessionIdGenerator.generate(),
-      pkoScraperFacade.logIn(credentials)
+      pkoScraperFacade.signIn(credentials)
     );
-    return sessionRepository.save(loginInProgressSession);
+    return sessionRepository.save(otpRequiredSession);
   }
 
   public ImportInProgressSession inputOtp(SessionId sessionId, Otp otp) {
-    LoginInProgressSession loginInProgressSession = sessionRepository.getLoginInProgressSession(sessionId);
-    ImportInProgressSession importInProgressSession = loginInProgressSession.finishLogin(
+    OtpRequiredSession otpRequiredSession = sessionRepository.getOtpRequiredSession(sessionId);
+    ImportInProgressSession importInProgressSession = otpRequiredSession.finishSignIn(
       pkoScraperFacade.inputOtp(
-        loginInProgressSession.pkoSession(),
+        otpRequiredSession.pkoSession(),
         otp
       )
     );

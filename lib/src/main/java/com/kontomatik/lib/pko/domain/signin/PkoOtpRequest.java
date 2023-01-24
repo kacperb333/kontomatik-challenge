@@ -1,4 +1,4 @@
-package com.kontomatik.lib.pko.domain.login;
+package com.kontomatik.lib.pko.domain.signin;
 
 record PkoOtpRequest(
   Integer version,
@@ -10,13 +10,13 @@ record PkoOtpRequest(
 ) {
   static final int REQUEST_VERSION = 3;
 
-  static PkoOtpRequest newRequest(String otp, LoginInProgressPkoSession loginInProgressPkoSession) {
+  static PkoOtpRequest newRequest(String otp, OtpRequiredPkoSession signInProgressPkoSession) {
     return new PkoOtpRequest(
       REQUEST_VERSION,
       "one_time_password",
       "submit",
-      loginInProgressPkoSession.flowId().value(),
-      loginInProgressPkoSession.token().value(),
+      signInProgressPkoSession.flowId().value(),
+      signInProgressPkoSession.token().value(),
       new PkoOtpData(otp)
     );
   }

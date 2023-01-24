@@ -1,6 +1,6 @@
 # What's this?
 A simple application that asynchronously fetches info about PKO BP bank accounts for given credentials.
-Username with password and additional sms one time password login flow is assumed.
+Username with password and additional sms one time password sign-in flow is assumed.
 
 Mongodb is used as a database.
 

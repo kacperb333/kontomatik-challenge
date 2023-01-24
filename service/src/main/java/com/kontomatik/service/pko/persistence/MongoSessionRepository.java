@@ -19,10 +19,10 @@ class MongoSessionRepository implements SessionRepository {
   }
 
   @Override
-  public LoginInProgressSession save(LoginInProgressSession loginInProgressSession) {
-    var persistentSession = PersistentSession.fromDomain(loginInProgressSession, dateTimeProvider.now());
+  public OtpRequiredSession save(OtpRequiredSession otpRequiredSession) {
+    var persistentSession = PersistentSession.fromDomain(otpRequiredSession, dateTimeProvider.now());
     var saved = mongo.save(persistentSession);
-    return new LoginInProgressSession(saved.sessionId, saved.pkoSession);
+    return new OtpRequiredSession(saved.sessionId, saved.pkoSession);
   }
 
   @Override
@@ -40,12 +40,12 @@ class MongoSessionRepository implements SessionRepository {
   }
 
   @Override
-  public LoginInProgressSession getLoginInProgressSession(SessionId sessionId) {
+  public OtpRequiredSession getOtpRequiredSession(SessionId sessionId) {
     var persistentSession = mongo.findById(sessionId, PersistentSession.class);
     if (persistentSession == null || persistentSession.pkoSession == null) {
       throw new SessionNotFound(sessionId);
     }
-    return new LoginInProgressSession(persistentSession.sessionId, persistentSession.pkoSession);
+    return new OtpRequiredSession(persistentSession.sessionId, persistentSession.pkoSession);
   }
 
   @Override

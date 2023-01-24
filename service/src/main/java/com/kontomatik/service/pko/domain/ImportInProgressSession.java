@@ -1,7 +1,7 @@
 package com.kontomatik.service.pko.domain;
 
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
-import com.kontomatik.lib.pko.domain.login.LoggedInPkoSession;
+import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession;
 
 public record ImportInProgressSession(
   SessionId sessionId,

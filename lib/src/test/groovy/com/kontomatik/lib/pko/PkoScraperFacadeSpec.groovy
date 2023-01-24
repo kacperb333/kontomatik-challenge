@@ -3,10 +3,10 @@ package com.kontomatik.lib.pko
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
-import com.kontomatik.lib.pko.domain.login.Credentials
-import com.kontomatik.lib.pko.domain.login.LoggedInPkoSession
-import com.kontomatik.lib.pko.domain.login.LoginInProgressPkoSession
-import com.kontomatik.lib.pko.domain.login.Otp
+import com.kontomatik.lib.pko.domain.signin.Credentials
+import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession
+import com.kontomatik.lib.pko.domain.signin.OtpRequiredPkoSession
+import com.kontomatik.lib.pko.domain.signin.Otp
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -53,10 +53,10 @@ class PkoScraperFacadeSpec extends Specification {
     pkoApi.stubPkoAccounts(successfulAccountsResponse(expectedAccounts))
 
     when:
-    LoginInProgressPkoSession loginInProgressSession = pkoScraperFacade.logIn(new Credentials("test-login", "test-password"))
+    OtpRequiredPkoSession otpRequiredPkoSession = pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
 
     and:
-    LoggedInPkoSession loggedInPkoSession = pkoScraperFacade.inputOtp(loginInProgressSession, new Otp("test-otp"))
+    LoggedInPkoSession loggedInPkoSession = pkoScraperFacade.inputOtp(otpRequiredPkoSession, new Otp("test-otp"))
 
     and:
     Accounts fetchedAccounts = pkoScraperFacade.fetchAccounts(loggedInPkoSession)
@@ -70,7 +70,7 @@ class PkoScraperFacadeSpec extends Specification {
     pkoApi.stubPkoLogin("test-login", testedLoginResponse)
 
     when:
-    pkoScraperFacade.logIn(new Credentials("test-login", "test-password"))
+    pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
 
     then:
     thrown(expectedThrown)
@@ -89,7 +89,7 @@ class PkoScraperFacadeSpec extends Specification {
     pkoApi.stubPkoPassword("test-password", testedPasswordResponse)
 
     when:
-    pkoScraperFacade.logIn(new Credentials("test-login", "test-password"))
+    pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
 
     then:
     thrown(expectedThrown)
@@ -109,10 +109,10 @@ class PkoScraperFacadeSpec extends Specification {
     pkoApi.stubPkoOtp("wrong-otp", testedOtpResponse)
 
     when:
-    LoginInProgressPkoSession loginInProgressSession = pkoScraperFacade.logIn(new Credentials("test-login", "test-password"))
+    OtpRequiredPkoSession otpRequiredPkoSession = pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
 
     and:
-    pkoScraperFacade.inputOtp(loginInProgressSession, new Otp("wrong-otp"))
+    pkoScraperFacade.inputOtp(otpRequiredPkoSession, new Otp("wrong-otp"))
 
     then:
     thrown(expectedThrown)
@@ -133,10 +133,10 @@ class PkoScraperFacadeSpec extends Specification {
     pkoApi.stubPkoAccounts(testedAccountsResponse)
 
     when:
-    LoginInProgressPkoSession loginInProgressSession = pkoScraperFacade.logIn(new Credentials("test-login", "test-password"))
+    OtpRequiredPkoSession otpRequiredPkoSession = pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
 
     and:
-    LoggedInPkoSession loggedInPkoSession = pkoScraperFacade.inputOtp(loginInProgressSession, new Otp("test-otp"))
+    LoggedInPkoSession loggedInPkoSession = pkoScraperFacade.inputOtp(otpRequiredPkoSession, new Otp("test-otp"))
 
     and:
     pkoScraperFacade.fetchAccounts(loggedInPkoSession)

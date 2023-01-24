@@ -1,6 +1,6 @@
-package com.kontomatik.lib.pko.domain.login;
+package com.kontomatik.lib.pko.domain.signin;
 
-record PkoLoginRequest(
+record PkoSignInRequest(
   Integer version,
   String state_id,
   String action,
@@ -8,8 +8,8 @@ record PkoLoginRequest(
 ) {
   static final int REQUEST_VERSION = 3;
 
-  static PkoLoginRequest newRequest(String login) {
-    return new PkoLoginRequest(
+  static PkoSignInRequest newRequest(String login) {
+    return new PkoSignInRequest(
       REQUEST_VERSION,
       "login",
       "submit",

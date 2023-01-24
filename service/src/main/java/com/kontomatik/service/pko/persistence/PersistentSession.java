@@ -1,10 +1,10 @@
 package com.kontomatik.service.pko.persistence;
 
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
-import com.kontomatik.lib.pko.domain.login.LoginInProgressPkoSession;
+import com.kontomatik.lib.pko.domain.signin.OtpRequiredPkoSession;
 import com.kontomatik.service.pko.domain.ImportFailedSession;
 import com.kontomatik.service.pko.domain.ImportFinishedSession;
-import com.kontomatik.service.pko.domain.LoginInProgressSession;
+import com.kontomatik.service.pko.domain.OtpRequiredSession;
 import com.kontomatik.service.pko.domain.SessionId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
@@ -19,7 +19,7 @@ import java.time.Instant;
 class PersistentSession {
   @Id
   final SessionId sessionId;
-  final LoginInProgressPkoSession pkoSession;
+  final OtpRequiredPkoSession pkoSession;
   final Accounts accounts;
   final boolean isFailed;
   @Indexed(expireAfter = "24h")
@@ -28,7 +28,7 @@ class PersistentSession {
   @PersistenceCreator
   PersistentSession(
     SessionId sessionId,
-    LoginInProgressPkoSession pkoSession,
+    OtpRequiredPkoSession pkoSession,
     Accounts accounts,
     boolean isFailed,
     Instant persistedAt
@@ -40,7 +40,7 @@ class PersistentSession {
     this.persistedAt = persistedAt;
   }
 
-  static PersistentSession fromDomain(LoginInProgressSession domainSession, Instant at) {
+  static PersistentSession fromDomain(OtpRequiredSession domainSession, Instant at) {
     return new PersistentSession(
       domainSession.sessionId(),
       domainSession.pkoSession(),

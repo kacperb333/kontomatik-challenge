@@ -2,13 +2,13 @@ package com.kontomatik.service.pko.domain;
 
 public interface SessionRepository {
 
-  LoginInProgressSession save(LoginInProgressSession loginInProgressSession);
+  OtpRequiredSession save(OtpRequiredSession otpRequiredSession);
 
   ImportFinishedSession save(ImportFinishedSession finishedSession);
 
   ImportFailedSession save(ImportFailedSession importFailedSession);
 
-  LoginInProgressSession getLoginInProgressSession(SessionId sessionId);
+  OtpRequiredSession getOtpRequiredSession(SessionId sessionId);
 
   AccountsImport getSessionAccountsImport(SessionId sessionId);
 }

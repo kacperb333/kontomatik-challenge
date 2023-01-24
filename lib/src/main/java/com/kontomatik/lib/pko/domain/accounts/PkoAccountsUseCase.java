@@ -6,7 +6,7 @@ import com.kontomatik.lib.GsonUtils;
 import com.kontomatik.lib.ScraperHttpClient;
 import com.kontomatik.lib.pko.PkoScraperFacade;
 import com.kontomatik.lib.pko.domain.PkoConstants;
-import com.kontomatik.lib.pko.domain.login.LoggedInPkoSession;
+import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession;
 
 import java.io.IOException;
 import java.util.Map;
