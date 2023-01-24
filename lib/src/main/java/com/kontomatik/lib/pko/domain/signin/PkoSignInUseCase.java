@@ -21,13 +21,12 @@ public class PkoSignInUseCase {
   public OtpRequiredPkoSession signIn(Credentials credentials) {
     return handleExceptions(() ->
     {
-      //TODO some other intermediate session after login?
-      OtpRequiredPkoSession afterLoginSession = enterLogin(credentials.login());
+      PasswordRequiredPkoSession afterLoginSession = enterLogin(credentials.login());
       return enterPassword(credentials.password(), afterLoginSession);
     });
   }
 
-  private OtpRequiredPkoSession enterLogin(String login) throws IOException {
+  private PasswordRequiredPkoSession enterLogin(String login) throws IOException {
     ScraperHttpClient.PostRequest postRequest = prepareLoginRequest(login);
     return httpClient.post("/login", postRequest, (responseHeaders, jsonResponse) -> {
       JsonObject response = GsonUtils.parseToObject(jsonResponse);
@@ -37,7 +36,7 @@ public class PkoSignInUseCase {
       Objects.requireNonNull(responseSessionId);
       String responseToken = GsonUtils.extractString(response, "token");
       String responseFlowId = GsonUtils.extractString(response, "flow_id");
-      return new OtpRequiredPkoSession(
+      return new PasswordRequiredPkoSession(
         new PkoSessionId(responseSessionId),
         new FlowId(responseFlowId),
         new Token(responseToken)
@@ -64,8 +63,8 @@ public class PkoSignInUseCase {
     }
   }
 
-  private OtpRequiredPkoSession enterPassword(String password, OtpRequiredPkoSession loginInProgressPkoSession) throws IOException {
-    ScraperHttpClient.PostRequest postRequest = preparePasswordRequest(password, loginInProgressPkoSession);
+  private OtpRequiredPkoSession enterPassword(String password, PasswordRequiredPkoSession passwordRequiredPkoSession) throws IOException {
+    ScraperHttpClient.PostRequest postRequest = preparePasswordRequest(password, passwordRequiredPkoSession);
     return httpClient.post("/login", postRequest, (responseHeaders, jsonResponse) -> {
       JsonObject response = GsonUtils.parseToObject(jsonResponse);
       String responseState = GsonUtils.extractString(response, "state_id");
@@ -82,12 +81,12 @@ public class PkoSignInUseCase {
     });
   }
 
-  private static ScraperHttpClient.PostRequest preparePasswordRequest(String password, OtpRequiredPkoSession loginInProgressPkoSession) {
-    PkoPasswordRequest passwordRequest = PkoPasswordRequest.newRequest(password, loginInProgressPkoSession);
+  private static ScraperHttpClient.PostRequest preparePasswordRequest(String password, PasswordRequiredPkoSession passwordRequiredPkoSession) {
+    PkoPasswordRequest passwordRequest = PkoPasswordRequest.newRequest(password, passwordRequiredPkoSession);
     return new ScraperHttpClient.PostRequest(
       Map.of(
         "accept", "application/json",
-        PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loginInProgressPkoSession)
+        PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(passwordRequiredPkoSession)
       ),
       passwordRequest
     );
@@ -144,8 +143,12 @@ public class PkoSignInUseCase {
     }
   }
 
-  private static String extractPkoSessionId(OtpRequiredPkoSession loginInProgressPkoSession) {
-    return loginInProgressPkoSession.pkoSessionId().value();
+  private static String extractPkoSessionId(PasswordRequiredPkoSession passwordRequiredPkoSession) {
+    return passwordRequiredPkoSession.pkoSessionId().value();
+  }
+
+  private static String extractPkoSessionId(OtpRequiredPkoSession otpRequiredPkoSession) {
+    return otpRequiredPkoSession.pkoSessionId().value();
   }
 
   private static <T> T handleExceptions(Callable<T> toRun) {

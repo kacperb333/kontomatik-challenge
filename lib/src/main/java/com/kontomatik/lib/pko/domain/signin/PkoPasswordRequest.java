@@ -12,14 +12,14 @@ record PkoPasswordRequest(
 
   static PkoPasswordRequest newRequest(
     String password,
-    OtpRequiredPkoSession otpRequiredPkoSession
+    PasswordRequiredPkoSession passwordRequiredPkoSession
   ) {
     return new PkoPasswordRequest(
       REQUEST_VERSION,
       "password",
       "submit",
-      otpRequiredPkoSession.flowId().value(),
-      otpRequiredPkoSession.token().value(),
+      passwordRequiredPkoSession.flowId().value(),
+      passwordRequiredPkoSession.token().value(),
       new PkoPasswordData(password)
     );
   }
