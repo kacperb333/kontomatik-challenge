@@ -11,11 +11,11 @@ import com.kontomatik.lib.pko.domain.signin.Otp
 import spock.lang.Specification
 import spock.lang.Subject
 
-import static com.kontomatik.lib.pko.PkoApiFixtures.*
+import static PkoApiMock.*
 
 class PkoScraperFacadeSpec extends Specification {
 
-  PkoApiFixtures pkoApi = new PkoApiFixtures(new WireMockServer(8090))
+  PkoApiMock pkoApi = new PkoApiMock(new WireMockServer(8090))
 
   @Subject
   PkoScraperFacade pkoScraperFacade = PkoScraperFacade.pkoScraperFacade("http://localhost:8090/ipko3")

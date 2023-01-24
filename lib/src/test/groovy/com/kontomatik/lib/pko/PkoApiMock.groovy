@@ -8,11 +8,11 @@ import com.kontomatik.lib.pko.domain.accounts.Accounts
 import static com.github.tomakehurst.wiremock.client.WireMock.*
 import static groovy.json.JsonOutput.toJson
 
-class PkoApiFixtures {
+class PkoApiMock {
 
   private WireMockServer wireMock
 
-  PkoApiFixtures(WireMockServer wireMock) {
+  PkoApiMock(WireMockServer wireMock) {
     this.wireMock = wireMock
   }
 
