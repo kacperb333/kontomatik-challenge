@@ -169,7 +169,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
   def "should return internal sever error on unexpected exception"() {
     given:
     stubScraperSignIn("test-login", "test-password")
-    stubScraperOtp("test-otp") { throw new PkoScraperFacade.PkoScraperFacadeBug(new RuntimeException("Something went wrong")) }
+    stubScraperOtp("test-otp") { throw new RuntimeException("Something went wrong") }
 
     when:
     HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
@@ -180,7 +180,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     then:
     otpResponse.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
     with(new JsonSlurper().parseText(otpResponse.body)) {
-      it.code == "PkoScraperFacadeBug"
+      it.code == "Error"
     }
   }
 

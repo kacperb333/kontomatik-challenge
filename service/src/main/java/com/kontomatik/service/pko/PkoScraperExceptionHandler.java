@@ -13,38 +13,41 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 class PkoScraperExceptionHandler {
   private static final Logger log = LoggerFactory.getLogger(PkoScraperExceptionHandler.class);
 
-  @ExceptionHandler
-  ResponseEntity<ErrorMessage> handle(PkoScraperFacade.PkoScraperFacadeBug ex) {
-    return warnAndRespond(
-      ex,
-      "Unexpected error occurred, please contact us.",
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
-  }
-
   @ExceptionHandler(PkoScraperFacade.LoginFailed.class)
   ResponseEntity<ErrorMessage> handle(PkoScraperFacade.LoginFailed ex) {
     return warnAndRespond(
-      ex,
+      "LoginFailed",
       String.format("Login failed: %s.", ex.getMessage()),
-      HttpStatus.UNPROCESSABLE_ENTITY
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      ex
     );
   }
 
   @ExceptionHandler(SessionNotFound.class)
   ResponseEntity<ErrorMessage> handle(SessionNotFound ex) {
     return warnAndRespond(
-      ex,
+      "SessionNotFound",
       String.format("Session with id [%s] not found. Make sure proper x-session header is set.", ex.sessionId.value()),
-      HttpStatus.NOT_FOUND
+      HttpStatus.NOT_FOUND,
+      ex
     );
   }
 
-  private ResponseEntity<ErrorMessage> warnAndRespond(Exception ex, String humanReadableMessage, HttpStatus httpStatus) {
+  @ExceptionHandler(Exception.class)
+  ResponseEntity<ErrorMessage> handle(Exception ex) {
+    return warnAndRespond(
+      "Error",
+      "Unexpected error occurred, please contact us.",
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      ex
+    );
+  }
+
+  private ResponseEntity<ErrorMessage> warnAndRespond(String code, String humanReadableMessage, HttpStatus httpStatus, Exception ex) {
     log.warn("Unrecoverable exception encountered", ex);
     return ResponseEntity.status(httpStatus)
       .body(new ErrorMessage(
-        ex.getClass().getSimpleName(),
+        code,
         humanReadableMessage
       ));
   }

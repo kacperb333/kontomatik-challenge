@@ -78,9 +78,9 @@ class PkoScraperFacadeSpec extends Specification {
     where:
     testedLoginResponse          || expectedThrown
     wrongLoginResponse()         || PkoScraperFacade.LoginFailed
-    malformedResponse()          || PkoScraperFacade.PkoScraperFacadeBug
-    badRequestResponse()         || PkoScraperFacade.PkoScraperFacadeBug
-    serviceUnavailableResponse() || PkoScraperFacade.PkoScraperFacadeBug
+    malformedResponse()          || RuntimeException
+    badRequestResponse()         || RuntimeException
+    serviceUnavailableResponse() || RuntimeException
   }
 
   def "should throw exception on erroneous password response"() {
@@ -97,9 +97,9 @@ class PkoScraperFacadeSpec extends Specification {
     where:
     testedPasswordResponse       || expectedThrown
     wrongPasswordResponse()      || PkoScraperFacade.LoginFailed
-    malformedResponse()          || PkoScraperFacade.PkoScraperFacadeBug
-    badRequestResponse()         || PkoScraperFacade.PkoScraperFacadeBug
-    serviceUnavailableResponse() || PkoScraperFacade.PkoScraperFacadeBug
+    malformedResponse()          || RuntimeException
+    badRequestResponse()         || RuntimeException
+    serviceUnavailableResponse() || RuntimeException
   }
 
   def "should throw exception on erroneous otp response"() {
@@ -120,9 +120,9 @@ class PkoScraperFacadeSpec extends Specification {
     where:
     testedOtpResponse            || expectedThrown
     wrongOtpResponse()           || PkoScraperFacade.LoginFailed
-    malformedResponse()          || PkoScraperFacade.PkoScraperFacadeBug
-    badRequestResponse()         || PkoScraperFacade.PkoScraperFacadeBug
-    serviceUnavailableResponse() || PkoScraperFacade.PkoScraperFacadeBug
+    malformedResponse()          || RuntimeException
+    badRequestResponse()         || RuntimeException
+    serviceUnavailableResponse() || RuntimeException
   }
 
   def "should throw exception on accounts fetch error"() {
@@ -146,8 +146,8 @@ class PkoScraperFacadeSpec extends Specification {
 
     where:
     testedAccountsResponse       || expectedThrown
-    malformedResponse()          || PkoScraperFacade.PkoScraperFacadeBug
-    badRequestResponse()         || PkoScraperFacade.PkoScraperFacadeBug
-    serviceUnavailableResponse() || PkoScraperFacade.PkoScraperFacadeBug
+    malformedResponse()          || RuntimeException
+    badRequestResponse()         || RuntimeException
+    serviceUnavailableResponse() || RuntimeException
   }
 }

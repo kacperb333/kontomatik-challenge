@@ -16,9 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -36,22 +36,22 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
   }
 
   @Override
-  public <T> T post(String url, PostRequest request, BiFunction<Map<String, String>, String, T> jsonResponseWithHeadersHandler) throws IOException {
+  public <T> T post(String url, PostRequest request, BiFunction<Map<String, String>, String, T> jsonResponseWithHeadersHandler) {
     HttpPost httpPost = preparePost(url, request);
     return handle(httpPost, jsonResponseWithHeadersHandler);
   }
 
-  private HttpPost preparePost(String url, PostRequest request) throws UnsupportedEncodingException {
+  private HttpPost preparePost(String url, PostRequest request) {
     HttpPost httpPost = new HttpPost(baseUrl + url);
     request.headers().forEach(httpPost::addHeader);
-    httpPost.setEntity(new StringEntity(GsonUtils.toJson(request.body())));
+    httpPost.setEntity(asStringEntity(request.body()));
     return httpPost;
   }
 
-  private <T> T handle(HttpUriRequest httpRequest, BiFunction<Map<String, String>, String, T> jsonResponseWithHeaders) throws IOException {
+  private <T> T handle(HttpUriRequest httpRequest, BiFunction<Map<String, String>, String, T> jsonResponseWithHeaders) {
     try (
-      CloseableHttpClient httpClient = apacheClientBuilder.build();
-      CloseableHttpResponse httpResponse = httpClient.execute(httpRequest)
+      CloseableHttpClient httpClient = buildClient();
+      CloseableHttpResponse httpResponse = doExecute(httpClient, httpRequest)
     ) {
       String jsonResponseBody = asJson(httpResponse.getEntity());
       Map<String, String> responseHeaders = asNormalizedHeaders(httpResponse.getAllHeaders());
@@ -61,7 +61,13 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
         logErrorRequest(httpRequest, responseHeaders, jsonResponseBody);
         throw e;
       }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
+
+  private CloseableHttpClient buildClient() {
+    return apacheClientBuilder.build();
   }
 
   private static Map<String, String> asNormalizedHeaders(Header[] headers) {
@@ -69,9 +75,18 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
       .collect(Collectors.toMap((it -> it.getName().toLowerCase()), NameValuePair::getValue));
   }
 
-  private static String asJson(HttpEntity httpEntity) throws IOException {
-    return EntityUtils.toString(httpEntity);
+  private static CloseableHttpResponse doExecute(CloseableHttpClient httpClient, HttpUriRequest httpUriRequest) {
+    return uncheck(() -> httpClient.execute(httpUriRequest));
   }
+
+  private static String asJson(HttpEntity httpEntity) {
+    return uncheck(() -> EntityUtils.toString(httpEntity));
+  }
+
+  private static StringEntity asStringEntity(Object entity) {
+    return uncheck(() -> new StringEntity(GsonUtils.toJson(entity)));
+  }
+
 
   private static void logErrorRequest(HttpUriRequest request, Map<String, String> responseHeaders, String responseBody) {
     String lineSeparator = System.lineSeparator();
@@ -88,5 +103,13 @@ public class ScraperApacheHttpClient implements ScraperHttpClient {
         + lineSeparator
         + responseBody
     );
+  }
+
+  private static <T> T uncheck(Callable<T> toRun) {
+    try {
+      return toRun.call();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -4,13 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kontomatik.lib.GsonUtils;
 import com.kontomatik.lib.ScraperHttpClient;
-import com.kontomatik.lib.pko.PkoScraperFacade;
 import com.kontomatik.lib.pko.domain.PkoConstants;
 import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession;
 
-import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class PkoAccountsUseCase {
   private final ScraperHttpClient httpClient;
@@ -20,12 +17,6 @@ public class PkoAccountsUseCase {
   }
 
   public Accounts fetchAccounts(LoggedInPkoSession loggedInPkoSession) {
-    return handleExceptions(() ->
-      doFetchAccounts(loggedInPkoSession)
-    );
-  }
-
-  private Accounts doFetchAccounts(LoggedInPkoSession loggedInPkoSession) throws IOException {
     ScraperHttpClient.PostRequest postRequest = prepareAccountsRequest(loggedInPkoSession);
     return httpClient.post("/init", postRequest, (responseHeaders, jsonResponse) -> {
       JsonObject response = GsonUtils.parseToObject(jsonResponse);
@@ -65,13 +56,5 @@ public class PkoAccountsUseCase {
         new Account.Balance.Currency(GsonUtils.extractString(jsonAccount, "currency"))
       )
     );
-  }
-
-  private static <T> T handleExceptions(Callable<T> toRun) {
-    try {
-      return toRun.call();
-    } catch (Exception e) {
-      throw new PkoScraperFacade.PkoScraperFacadeBug(e);
-    }
   }
 }

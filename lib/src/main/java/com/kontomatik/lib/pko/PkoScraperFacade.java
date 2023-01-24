@@ -31,11 +31,5 @@ public class PkoScraperFacade {
       super(message);
     }
   }
-
-  public static class PkoScraperFacadeBug extends RuntimeException {
-    public PkoScraperFacadeBug(Throwable cause) {
-      super(cause);
-    }
-  }
 }
 
