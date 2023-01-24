@@ -1,14 +1,14 @@
 package com.kontomatik.service.pko.domain;
 
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo;
+import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.login.LoggedInPkoSession;
 
 public record ImportInProgressSession(
   SessionId sessionId,
   LoggedInPkoSession pkoSession
 ) {
-  ImportFinishedSession finishSuccessful(AccountsInfo accountsInfo) {
-    return new ImportFinishedSession(sessionId, accountsInfo);
+  ImportFinishedSession finishSuccessful(Accounts accounts) {
+    return new ImportFinishedSession(sessionId, accounts);
   }
 
   ImportFailedSession finishFailed() {

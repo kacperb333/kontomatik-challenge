@@ -12,20 +12,20 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class PkoAccountInfoUseCase {
+public class PkoAccountsUseCase {
   private final ScraperHttpClient httpClient;
 
-  public PkoAccountInfoUseCase(ScraperHttpClient httpClient) {
+  public PkoAccountsUseCase(ScraperHttpClient httpClient) {
     this.httpClient = httpClient;
   }
 
-  public AccountsInfo fetchAccountInfo(LoggedInPkoSession loggedInPkoSession) {
+  public Accounts fetchAccounts(LoggedInPkoSession loggedInPkoSession) {
     return handleExceptions(() ->
-      fetchAccounts(loggedInPkoSession)
+      doFetchAccounts(loggedInPkoSession)
     );
   }
 
-  private AccountsInfo fetchAccounts(LoggedInPkoSession loggedInPkoSession) throws IOException {
+  private Accounts doFetchAccounts(LoggedInPkoSession loggedInPkoSession) throws IOException {
     ScraperHttpClient.PostRequest postRequest = prepareAccountsRequest(loggedInPkoSession);
     return httpClient.post("/init", postRequest, (responseHeaders, jsonResponse) -> {
       JsonObject response = GsonUtils.parseToObject(jsonResponse);
@@ -49,19 +49,21 @@ public class PkoAccountInfoUseCase {
     return loggedInPkoSession.pkoSessionId().value();
   }
 
-  private static AccountsInfo parseAccounts(Map<String, JsonElement> accounts) {
-    return new AccountsInfo(
+  private static Accounts parseAccounts(Map<String, JsonElement> accounts) {
+    return new Accounts(
       accounts.values().stream()
         .map(it -> parseAccount(it.getAsJsonObject()))
         .toList()
     );
   }
 
-  private static AccountInfo parseAccount(JsonObject jsonAccount) {
-    return new AccountInfo(
-      GsonUtils.extractString(jsonAccount, "name"),
-      GsonUtils.extractString(jsonAccount, "balance"),
-      GsonUtils.extractString(jsonAccount, "currency")
+  private static Account parseAccount(JsonObject jsonAccount) {
+    return new Account(
+      new Account.Name(GsonUtils.extractString(jsonAccount, "name")),
+      new Account.Balance(
+        new Account.Balance.Amount(GsonUtils.extractString(jsonAccount, "balance")),
+        new Account.Balance.Currency(GsonUtils.extractString(jsonAccount, "currency"))
+      )
     );
   }
 

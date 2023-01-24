@@ -1,6 +1,6 @@
 package com.kontomatik.service.pko.persistence;
 
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo;
+import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.login.LoginInProgressPkoSession;
 import com.kontomatik.service.pko.domain.ImportFailedSession;
 import com.kontomatik.service.pko.domain.ImportFinishedSession;
@@ -20,7 +20,7 @@ class PersistentSession {
   @Id
   final SessionId sessionId;
   final LoginInProgressPkoSession pkoSession;
-  final AccountsInfo accountsInfo;
+  final Accounts accounts;
   final boolean isFailed;
   @Indexed(expireAfter = "24h")
   final Instant persistedAt;
@@ -29,13 +29,13 @@ class PersistentSession {
   PersistentSession(
     SessionId sessionId,
     LoginInProgressPkoSession pkoSession,
-    AccountsInfo accountsInfo,
+    Accounts accounts,
     boolean isFailed,
     Instant persistedAt
   ) {
     this.sessionId = sessionId;
     this.pkoSession = pkoSession;
-    this.accountsInfo = accountsInfo;
+    this.accounts = accounts;
     this.isFailed = isFailed;
     this.persistedAt = persistedAt;
   }
@@ -44,7 +44,7 @@ class PersistentSession {
     return new PersistentSession(
       domainSession.sessionId(),
       domainSession.pkoSession(),
-      AccountsInfo.EMPTY,
+      Accounts.EMPTY,
       false,
       at
     );
@@ -54,7 +54,7 @@ class PersistentSession {
     return new PersistentSession(
       domainSession.sessionId(),
       null,
-      domainSession.accountsInfo(),
+      domainSession.accounts(),
       false,
       at
     );
@@ -64,7 +64,7 @@ class PersistentSession {
     return new PersistentSession(
       domainSession.sessionId(),
       null,
-      AccountsInfo.EMPTY,
+      Accounts.EMPTY,
       true,
       at
     );

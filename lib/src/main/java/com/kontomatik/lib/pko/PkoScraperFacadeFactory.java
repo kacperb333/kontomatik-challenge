@@ -2,7 +2,7 @@ package com.kontomatik.lib.pko;
 
 import com.kontomatik.lib.ScraperHttpClient;
 import com.kontomatik.lib.httpclient.ScraperApacheHttpClient;
-import com.kontomatik.lib.pko.domain.accounts.PkoAccountInfoUseCase;
+import com.kontomatik.lib.pko.domain.accounts.PkoAccountsUseCase;
 import com.kontomatik.lib.pko.domain.login.PkoLoginUseCase;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -15,7 +15,7 @@ public class PkoScraperFacadeFactory {
   static PkoScraperFacade pkoScraperFacade(String baseUrl) {
     ScraperHttpClient httpClient = new ScraperApacheHttpClient(baseUrl, HttpClientBuilder.create());
     var pkoLoginUseCase = new PkoLoginUseCase(httpClient);
-    var pkoAccountInfoUseCase = new PkoAccountInfoUseCase(httpClient);
-    return new PkoScraperFacade(pkoLoginUseCase, pkoAccountInfoUseCase);
+    var pkoAccounsUseCase = new PkoAccountsUseCase(httpClient);
+    return new PkoScraperFacade(pkoLoginUseCase, pkoAccounsUseCase);
   }
 }

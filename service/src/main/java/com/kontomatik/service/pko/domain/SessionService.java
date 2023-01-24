@@ -1,7 +1,7 @@
 package com.kontomatik.service.pko.domain;
 
 import com.kontomatik.lib.pko.PkoScraperFacade;
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo;
+import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.login.Credentials;
 import com.kontomatik.lib.pko.domain.login.Otp;
 import org.slf4j.Logger;
@@ -52,10 +52,8 @@ public class SessionService {
 
   private void importAccounts(ImportInProgressSession importInProgressSession) {
     try {
-      AccountsInfo accountsInfo = pkoScraperFacade.fetchAccountsInfo(importInProgressSession.pkoSession());
-      ImportFinishedSession finishedSession = importInProgressSession.finishSuccessful(
-        accountsInfo
-      );
+      Accounts accounts = pkoScraperFacade.fetchAccounts(importInProgressSession.pkoSession());
+      ImportFinishedSession finishedSession = importInProgressSession.finishSuccessful(accounts);
       sessionRepository.save(finishedSession);
     } catch (Exception e) {
       log.error("Encountered exception during import", e);

@@ -1,17 +1,17 @@
 package com.kontomatik.lib.pko;
 
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo;
-import com.kontomatik.lib.pko.domain.accounts.PkoAccountInfoUseCase;
+import com.kontomatik.lib.pko.domain.accounts.Accounts;
+import com.kontomatik.lib.pko.domain.accounts.PkoAccountsUseCase;
 import com.kontomatik.lib.pko.domain.login.*;
 
 public class PkoScraperFacade {
 
   private final PkoLoginUseCase pkoLoginUseCase;
-  private final PkoAccountInfoUseCase pkoAccountInfoUseCase;
+  private final PkoAccountsUseCase pkoAccountsUseCase;
 
-  PkoScraperFacade(PkoLoginUseCase pkoLoginUseCase, PkoAccountInfoUseCase pkoAccountInfoUseCase) {
+  PkoScraperFacade(PkoLoginUseCase pkoLoginUseCase, PkoAccountsUseCase pkoAccountsUseCase) {
     this.pkoLoginUseCase = pkoLoginUseCase;
-    this.pkoAccountInfoUseCase = pkoAccountInfoUseCase;
+    this.pkoAccountsUseCase = pkoAccountsUseCase;
   }
 
   public LoginInProgressPkoSession logIn(Credentials credentials) {
@@ -22,8 +22,8 @@ public class PkoScraperFacade {
     return pkoLoginUseCase.inputOtp(inProgressSession, otp);
   }
 
-  public AccountsInfo fetchAccountsInfo(LoggedInPkoSession loggedInSession) {
-    return pkoAccountInfoUseCase.fetchAccountInfo(loggedInSession);
+  public Accounts fetchAccounts(LoggedInPkoSession loggedInSession) {
+    return pkoAccountsUseCase.fetchAccounts(loggedInSession);
   }
 
   public static class LoginFailed extends RuntimeException {

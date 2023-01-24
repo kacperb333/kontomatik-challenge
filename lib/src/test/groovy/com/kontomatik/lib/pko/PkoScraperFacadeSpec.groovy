@@ -1,8 +1,8 @@
 package com.kontomatik.lib.pko
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.kontomatik.lib.pko.domain.accounts.AccountInfo
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo
+import com.kontomatik.lib.pko.domain.accounts.Account
+import com.kontomatik.lib.pko.domain.accounts.Accounts
 import com.kontomatik.lib.pko.domain.login.Credentials
 import com.kontomatik.lib.pko.domain.login.LoggedInPkoSession
 import com.kontomatik.lib.pko.domain.login.LoginInProgressPkoSession
@@ -10,7 +10,7 @@ import com.kontomatik.lib.pko.domain.login.Otp
 import spock.lang.Specification
 import spock.lang.Subject
 
-import static PkoApiFixtures.*
+import static com.kontomatik.lib.pko.PkoApiFixtures.*
 
 class PkoScraperFacadeSpec extends Specification {
 
@@ -29,16 +29,28 @@ class PkoScraperFacadeSpec extends Specification {
 
   def "should fetch accounts info after successful login and otp input"() {
     given:
-    AccountsInfo expectedAccountsInfo = new AccountsInfo([
-      new AccountInfo("account-1", "2000.00", "PLN"),
-      new AccountInfo("account-2", "3000.00", "EUR")
+    Accounts expectedAccounts = new Accounts([
+      new Account(
+        new Account.Name("account-1"),
+        new Account.Balance(
+          new Account.Balance.Amount("2000.00"),
+          new Account.Balance.Currency("PLN")
+        )
+      ),
+      new Account(
+        new Account.Name("account-2"),
+        new Account.Balance(
+          new Account.Balance.Amount("3000.00"),
+          new Account.Balance.Currency("EUR")
+        )
+      )
     ])
 
     and:
     pkoApi.stubPkoLogin("test-login", successfulLoginResponse())
     pkoApi.stubPkoPassword("test-password", successfulPasswordResponse())
     pkoApi.stubPkoOtp("test-otp", successfulOtpResponse())
-    pkoApi.stubPkoAccounts(successfulAccountsResponse(expectedAccountsInfo))
+    pkoApi.stubPkoAccounts(successfulAccountsResponse(expectedAccounts))
 
     when:
     LoginInProgressPkoSession loginInProgressSession = pkoScraperFacade.logIn(new Credentials("test-login", "test-password"))
@@ -47,10 +59,10 @@ class PkoScraperFacadeSpec extends Specification {
     LoggedInPkoSession loggedInPkoSession = pkoScraperFacade.inputOtp(loginInProgressSession, new Otp("test-otp"))
 
     and:
-    AccountsInfo fetchedAccountsInfo = pkoScraperFacade.fetchAccountsInfo(loggedInPkoSession)
+    Accounts fetchedAccounts = pkoScraperFacade.fetchAccounts(loggedInPkoSession)
 
     then:
-    fetchedAccountsInfo == expectedAccountsInfo
+    fetchedAccounts == expectedAccounts
   }
 
   def "should throw exception on erroneous pko login response"() {
@@ -127,7 +139,7 @@ class PkoScraperFacadeSpec extends Specification {
     LoggedInPkoSession loggedInPkoSession = pkoScraperFacade.inputOtp(loginInProgressSession, new Otp("test-otp"))
 
     and:
-    pkoScraperFacade.fetchAccountsInfo(loggedInPkoSession)
+    pkoScraperFacade.fetchAccounts(loggedInPkoSession)
 
     then:
     thrown(expectedThrown)

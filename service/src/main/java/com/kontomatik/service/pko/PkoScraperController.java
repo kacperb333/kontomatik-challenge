@@ -1,6 +1,7 @@
 package com.kontomatik.service.pko;
 
-import com.kontomatik.lib.pko.domain.accounts.AccountInfo;
+import com.kontomatik.lib.pko.domain.accounts.Account;
+import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.login.Credentials;
 import com.kontomatik.lib.pko.domain.login.Otp;
 import com.kontomatik.service.pko.domain.AccountsImport;
@@ -47,12 +48,12 @@ class PkoScraperController {
   }
 
   @GetMapping("/session/accounts")
-  ResponseEntity<AccountsInfoResponse> fetchSingleImport(
+  ResponseEntity<AccountsResponse> fetchSingleImport(
     @RequestHeader(SESSION_HEADER) SessionId sessionId
   ) {
-    AccountsImport importedAccountsInfo = sessionService.getSessionAccountsImport(sessionId);
+    AccountsImport importedAccounts = sessionService.getSessionAccountsImport(sessionId);
     return ResponseEntity.ok(
-      new AccountsInfoResponse(importedAccountsInfo.isFailed(), importedAccountsInfo.data().accounts())
+      AccountsResponse.from(importedAccounts.data(), importedAccounts.isFailed())
     );
   }
 
@@ -72,10 +73,33 @@ class PkoScraperController {
   ) {
   }
 
-  private record AccountsInfoResponse(
+  private record AccountsResponse(
     boolean isFailed,
-    List<AccountInfo> accounts
+    List<AccountResponse> accounts
   ) {
+    static AccountsResponse from(Accounts accounts, boolean isFailed) {
+      return new AccountsResponse(
+        isFailed,
+        accounts.list().stream()
+          .map(AccountResponse::from)
+          .toList()
+      );
+    }
+
+    record AccountResponse(
+      String name,
+      String balance,
+      String currency
+    ) {
+      static AccountResponse from(Account account) {
+        return new AccountResponse(
+          account.name().value(),
+          account.balance().amount().value(),
+          account.balance().currency().value()
+        );
+      }
+
+    }
   }
 }
 

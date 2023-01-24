@@ -29,7 +29,7 @@ class MongoSessionRepository implements SessionRepository {
   public ImportFinishedSession save(ImportFinishedSession finishedSession) {
     var persistentSession = PersistentSession.fromDomain(finishedSession, dateTimeProvider.now());
     var saved = mongo.save(persistentSession);
-    return new ImportFinishedSession(saved.sessionId, saved.accountsInfo);
+    return new ImportFinishedSession(saved.sessionId, saved.accounts);
   }
 
   @Override
@@ -54,6 +54,6 @@ class MongoSessionRepository implements SessionRepository {
     if (persistentSession == null) {
       throw new SessionNotFound(sessionId);
     }
-    return new AccountsImport(persistentSession.isFailed, persistentSession.accountsInfo);
+    return new AccountsImport(persistentSession.isFailed, persistentSession.accounts);
   }
 }

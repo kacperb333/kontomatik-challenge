@@ -1,8 +1,8 @@
 package com.kontomatik.service.pko
 
 import com.kontomatik.lib.pko.PkoScraperFacade
-import com.kontomatik.lib.pko.domain.accounts.AccountInfo
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo
+import com.kontomatik.lib.pko.domain.accounts.Account
+import com.kontomatik.lib.pko.domain.accounts.Accounts
 import com.kontomatik.lib.pko.domain.login.Credentials
 import com.kontomatik.lib.pko.domain.login.Otp
 import com.kontomatik.service.HttpResponseWrapper
@@ -14,7 +14,7 @@ import spock.util.concurrent.PollingConditions
 
 import java.util.concurrent.CountDownLatch
 
-import static PkoLibFactories.*
+import static com.kontomatik.service.pko.PkoLibFactories.*
 import static com.kontomatik.service.pko.PkoScraperController.SESSION_HEADER
 
 class PkoScraperApiIntSpec extends IntegrationSpec {
@@ -27,11 +27,29 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     given:
     stubScraperLogIn("test-login", "test-password")
     stubScraperOtp("test-otp")
-    stubScrapperAccountsInfo {
-      new AccountsInfo([
-        new AccountInfo("account-1", "1000.00", "PLN"),
-        new AccountInfo("account-2", "2000.00", "EUR"),
-        new AccountInfo("account-3", "3000.00", "USD")
+    stubScrapperAccounts {
+      new Accounts([
+        new Account(
+          new Account.Name("account-1"),
+          new Account.Balance(
+            new Account.Balance.Amount("1000.00"),
+            new Account.Balance.Currency("PLN")
+          )
+        ),
+        new Account(
+          new Account.Name("account-2"),
+          new Account.Balance(
+            new Account.Balance.Amount("2000.00"),
+            new Account.Balance.Currency("EUR")
+          )
+        ),
+        new Account(
+          new Account.Name("account-3"),
+          new Account.Balance(
+            new Account.Balance.Amount("3000.00"),
+            new Account.Balance.Currency("USD")
+          )
+        )
       ])
     }
 
@@ -77,9 +95,9 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     and:
     stubScraperLogIn("test-login", "test-password")
     stubScraperOtp("test-otp")
-    stubScrapperAccountsInfo {
+    stubScrapperAccounts {
       importLatch.await()
-      testAccountsInfo()
+      testAccounts()
     }
 
     and:
@@ -170,7 +188,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     given:
     stubScraperLogIn("test-login", "test-password")
     stubScraperOtp("test-otp")
-    stubScrapperAccountsInfo { throw new RuntimeException("Something went wrong") }
+    stubScrapperAccounts { throw new RuntimeException("Something went wrong") }
 
     when:
     HttpResponseWrapper loginResponse = postLogIn("test-login", "test-password")
@@ -204,10 +222,10 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     pkoScraperFacade.inputOtp(testLoginInProgressPkoSession(), new Otp(otp)) >> { otpClosure() }
   }
 
-  private void stubScrapperAccountsInfo(
-    Closure accountsInfoClosure
+  private void stubScrapperAccounts(
+    Closure accountsClosure
   ) {
-    pkoScraperFacade.fetchAccountsInfo(testLoggedInPkoSession()) >> { accountsInfoClosure() }
+    pkoScraperFacade.fetchAccounts(testLoggedInPkoSession()) >> { accountsClosure() }
   }
 
   private HttpResponseWrapper postLogIn(String login, String password) {

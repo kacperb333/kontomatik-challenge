@@ -1,12 +1,8 @@
 package com.kontomatik.service.pko
 
-import com.kontomatik.lib.pko.domain.accounts.AccountInfo
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo
-import com.kontomatik.lib.pko.domain.login.FlowId
-import com.kontomatik.lib.pko.domain.login.LoggedInPkoSession
-import com.kontomatik.lib.pko.domain.login.LoginInProgressPkoSession
-import com.kontomatik.lib.pko.domain.login.PkoSessionId
-import com.kontomatik.lib.pko.domain.login.Token
+import com.kontomatik.lib.pko.domain.accounts.Account
+import com.kontomatik.lib.pko.domain.accounts.Accounts
+import com.kontomatik.lib.pko.domain.login.*
 
 class PkoLibFactories {
   static PkoSessionId testPkoSessionId() {
@@ -27,10 +23,22 @@ class PkoLibFactories {
     )
   }
 
-  static AccountsInfo testAccountsInfo() {
-    new AccountsInfo([
-      new AccountInfo("account-1", "31.00", "PLN"),
-      new AccountInfo("account-2", "32.00", "USD")
+  static Accounts testAccounts() {
+    new Accounts([
+      new Account(
+        new Account.Name("account-1"),
+        new Account.Balance(
+          new Account.Balance.Amount("31.00"),
+          new Account.Balance.Currency("PLN")
+        )
+      ),
+      new Account(
+        new Account.Name("account-2"),
+        new Account.Balance(
+          new Account.Balance.Amount("32.00"),
+          new Account.Balance.Currency("USD")
+        )
+      )
     ])
   }
 }

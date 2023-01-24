@@ -3,7 +3,7 @@ package com.kontomatik.lib.pko
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.kontomatik.lib.pko.domain.PkoConstants
-import com.kontomatik.lib.pko.domain.accounts.AccountsInfo
+import com.kontomatik.lib.pko.domain.accounts.Accounts
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*
 import static groovy.json.JsonOutput.toJson
@@ -131,13 +131,13 @@ class PkoApiFixtures {
     """
   }
 
-  static ResponseDefinitionBuilder successfulAccountsResponse(AccountsInfo accountsInfo) {
-    Map accountsMap = accountsInfo.accounts().collectEntries {
-      String accountId = "${it.name()}-id"
+  static ResponseDefinitionBuilder successfulAccountsResponse(Accounts accounts) {
+    Map accountsMap = accounts.list().collectEntries {
+      String accountId = "${it.name().value()}-id"
       [(accountId): [
-        "balance" : it.balance(),
-        "currency": it.currency(),
-        "name"    : it.name()
+        "balance" : it.balance().amount().value(),
+        "currency": it.balance().currency().value(),
+        "name"    : it.name().value()
       ]]
     }
 
