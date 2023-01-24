@@ -23,10 +23,9 @@ public class PkoSignInUseCase {
   private PasswordRequiredPkoSession enterLogin(String login) {
     PostRequest postRequest = prepareLoginRequest(login);
     Response response = httpClient.post("/login", postRequest);
-    String responseState = response.extractString("state_id");
-    validateLoginResponseState(responseState);
-    String responseSessionId = response.getHeader(PkoConstants.SESSION_HEADER_NAME);
-    Objects.requireNonNull(responseSessionId);
+    assertCorrectLogin(response);
+    assertPasswordRequired(response);
+    String responseSessionId = assertContainsSessionId(response);
     String responseToken = response.extractString("token");
     String responseFlowId = response.extractString("flow_id");
     return new PasswordRequiredPkoSession(
@@ -43,11 +42,14 @@ public class PkoSignInUseCase {
       .build();
   }
 
-  private static void validateLoginResponseState(String responseStateId) {
-    if (Objects.equals(responseStateId, "login")) {
-      throw new PkoScraperFacade.LoginFailed("Invalid credentials");
+  private static void assertCorrectLogin(Response response) {
+    if (Objects.equals(extractResponseStateId(response), "login")) {
+      throw new InvalidCredentials();
     }
-    if (!Objects.equals(responseStateId, "password")) {
+  }
+
+  private static void assertPasswordRequired(Response response) {
+    if (!Objects.equals(extractResponseStateId(response), "password")) {
       throw new IllegalStateException("Wrong state id for username response");
     }
   }
@@ -55,10 +57,9 @@ public class PkoSignInUseCase {
   private OtpRequiredPkoSession enterPassword(String password, PasswordRequiredPkoSession passwordRequiredPkoSession) {
     PostRequest postRequest = preparePasswordRequest(password, passwordRequiredPkoSession);
     Response response = httpClient.post("/login", postRequest);
-    String responseState = response.extractString("state_id");
-    validatePasswordResponseState(responseState);
-    String responseSessionId = response.getHeader(PkoConstants.SESSION_HEADER_NAME);
-    Objects.requireNonNull(responseSessionId);
+    assertCorrectPassword(response);
+    assertOneTimePasswordRequired(response);
+    String responseSessionId = assertContainsSessionId(response);
     String responseToken = response.extractString("token");
     String responseFlowId = response.extractString("flow_id");
     return new OtpRequiredPkoSession(
@@ -76,15 +77,17 @@ public class PkoSignInUseCase {
       .build();
   }
 
-  private static void validatePasswordResponseState(String responseStateId) {
-    if (Objects.equals(responseStateId, "login")) {
-      throw new PkoScraperFacade.LoginFailed("Invalid credentials");
-    }
-    if (!Objects.equals(responseStateId, "one_time_password")) {
-      throw new IllegalStateException("Wrong state id for password response");
+  private static void assertCorrectPassword(Response response) {
+    if (Objects.equals(extractResponseStateId(response), "login")) {
+      throw new InvalidCredentials();
     }
   }
 
+  private static void assertOneTimePasswordRequired(Response response) {
+    if (!Objects.equals(extractResponseStateId(response), "one_time_password")) {
+      throw new IllegalStateException("Wrong state id for password response");
+    }
+  }
 
   public LoggedInPkoSession inputOtp(OtpRequiredPkoSession otpRequiredSession, Otp otp) {
     return enterOtp(otp.code(), otpRequiredSession);
@@ -93,10 +96,9 @@ public class PkoSignInUseCase {
   private LoggedInPkoSession enterOtp(String otp, OtpRequiredPkoSession loginInProgressPkoSession) {
     PostRequest postRequest = prepareOtpRequest(otp, loginInProgressPkoSession);
     Response response = httpClient.post("/login", postRequest);
-    String responseState = response.extractString("state_id");
-    validateOtpResponseState(responseState);
-    String responseSessionId = response.getHeader(PkoConstants.SESSION_HEADER_NAME);
-    Objects.requireNonNull(responseSessionId);
+    assertCorrectOtp(response);
+    assertSignInFinished(response);
+    String responseSessionId = assertContainsSessionId(response);
     return new LoggedInPkoSession(
       new PkoSessionId(responseSessionId)
     );
@@ -110,14 +112,26 @@ public class PkoSignInUseCase {
       .build();
   }
 
-  private static void validateOtpResponseState(String responseStateId) {
-    if (Objects.equals(responseStateId, "one_time_password")) {
-      throw new PkoScraperFacade.LoginFailed("Wrong one time password");
+  private static void assertCorrectOtp(Response response) {
+    if (Objects.equals(extractResponseStateId(response), "one_time_password")) {
+      throw new InvalidCredentials();
     }
+  }
 
-    if (!Objects.equals(responseStateId, "END")) {
+  private static void assertSignInFinished(Response response) {
+    if (!Objects.equals(extractResponseStateId(response), "END")) {
       throw new IllegalStateException("Wrong state id for otp response");
     }
+  }
+
+  private static String extractResponseStateId(Response response) {
+    return response.extractString("state_id");
+  }
+
+  private static String assertContainsSessionId(Response response) {
+    String responseSessionId = response.getHeader(PkoConstants.SESSION_HEADER_NAME);
+    Objects.requireNonNull(responseSessionId);
+    return responseSessionId;
   }
 
   private static String extractPkoSessionId(PasswordRequiredPkoSession passwordRequiredPkoSession) {

@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
 import com.kontomatik.lib.pko.domain.signin.Credentials
+import com.kontomatik.lib.pko.domain.signin.InvalidCredentials
 import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession
 import com.kontomatik.lib.pko.domain.signin.OtpRequiredPkoSession
 import com.kontomatik.lib.pko.domain.signin.Otp
@@ -77,7 +78,7 @@ class PkoScraperFacadeSpec extends Specification {
 
     where:
     testedLoginResponse          || expectedThrown
-    wrongLoginResponse()         || PkoScraperFacade.LoginFailed
+    wrongLoginResponse()         || InvalidCredentials
     malformedResponse()          || RuntimeException
     badRequestResponse()         || RuntimeException
     serviceUnavailableResponse() || RuntimeException
@@ -96,7 +97,7 @@ class PkoScraperFacadeSpec extends Specification {
 
     where:
     testedPasswordResponse       || expectedThrown
-    wrongPasswordResponse()      || PkoScraperFacade.LoginFailed
+    wrongPasswordResponse()      || InvalidCredentials
     malformedResponse()          || RuntimeException
     badRequestResponse()         || RuntimeException
     serviceUnavailableResponse() || RuntimeException
@@ -119,7 +120,7 @@ class PkoScraperFacadeSpec extends Specification {
 
     where:
     testedOtpResponse            || expectedThrown
-    wrongOtpResponse()           || PkoScraperFacade.LoginFailed
+    wrongOtpResponse()           || InvalidCredentials
     malformedResponse()          || RuntimeException
     badRequestResponse()         || RuntimeException
     serviceUnavailableResponse() || RuntimeException

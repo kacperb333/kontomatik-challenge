@@ -39,11 +39,5 @@ public class PkoScraperFacade {
   public Accounts fetchAccounts(LoggedInPkoSession loggedInSession) {
     return pkoAccountsUseCase.fetchAccounts(loggedInSession);
   }
-
-  public static class LoginFailed extends RuntimeException {
-    public LoginFailed(String message) {
-      super(message);
-    }
-  }
 }
 

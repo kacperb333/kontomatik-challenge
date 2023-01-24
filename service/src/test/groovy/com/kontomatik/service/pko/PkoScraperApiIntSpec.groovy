@@ -4,6 +4,7 @@ import com.kontomatik.lib.pko.PkoScraperFacade
 import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
 import com.kontomatik.lib.pko.domain.signin.Credentials
+import com.kontomatik.lib.pko.domain.signin.InvalidCredentials
 import com.kontomatik.lib.pko.domain.signin.Otp
 import com.kontomatik.service.HttpResponseWrapper
 import com.kontomatik.service.IntegrationSpec
@@ -132,8 +133,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
 
   def "should return login failed response with proper information for the user in case sign in fails"() {
     given:
-    String messageForUser = "Some important login and password message for the user to see"
-    stubScraperSignIn("test-login", "test-password") { throw new PkoScraperFacade.LoginFailed(messageForUser) }
+    stubScraperSignIn("test-login", "test-password") { throw new InvalidCredentials() }
 
     when:
     HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
@@ -141,16 +141,14 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     then:
     signInResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
     with(new JsonSlurper().parseText(signInResponse.body)) {
-      it.code == "LoginFailed"
-      it.message.contains(messageForUser)
+      it.code == "InvalidCredentials"
     }
   }
 
   def "should return login failed response with proper information for the user in case otp input fails"() {
     given:
-    String messageForUser = "Some important otp message for the user to see"
     stubScraperSignIn("test-login", "test-password")
-    stubScraperOtp("test-otp") { throw new PkoScraperFacade.LoginFailed(messageForUser) }
+    stubScraperOtp("test-otp") { throw new InvalidCredentials() }
 
     when:
     HttpResponseWrapper signInResponse = postSignIn("test-login", "test-password")
@@ -161,8 +159,7 @@ class PkoScraperApiIntSpec extends IntegrationSpec {
     then:
     otpResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
     with(new JsonSlurper().parseText(otpResponse.body)) {
-      it.code == "LoginFailed"
-      it.message.contains(messageForUser)
+      it.code == "InvalidCredentials"
     }
   }
 

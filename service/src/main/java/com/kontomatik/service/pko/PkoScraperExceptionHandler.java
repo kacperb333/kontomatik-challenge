@@ -1,6 +1,6 @@
 package com.kontomatik.service.pko;
 
-import com.kontomatik.lib.pko.PkoScraperFacade;
+import com.kontomatik.lib.pko.domain.signin.InvalidCredentials;
 import com.kontomatik.service.pko.domain.SessionNotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 class PkoScraperExceptionHandler {
   private static final Logger log = LoggerFactory.getLogger(PkoScraperExceptionHandler.class);
 
-  @ExceptionHandler(PkoScraperFacade.LoginFailed.class)
-  ResponseEntity<ErrorMessage> handle(PkoScraperFacade.LoginFailed ex) {
+  @ExceptionHandler(InvalidCredentials.class)
+  ResponseEntity<ErrorMessage> handle(InvalidCredentials ex) {
     return warnAndRespond(
-      "LoginFailed",
-      String.format("Login failed: %s.", ex.getMessage()),
+      "InvalidCredentials",
+      "Invalid credentials. Please, try again",
       HttpStatus.UNPROCESSABLE_ENTITY,
       ex
     );
