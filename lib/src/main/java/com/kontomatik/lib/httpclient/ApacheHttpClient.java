@@ -44,7 +44,7 @@ public class ApacheHttpClient implements HttpClient {
   private HttpPost preparePost(String url, PostRequest request) {
     HttpPost httpPost = new HttpPost(baseUrl + url);
     request.headers().forEach(httpPost::addHeader);
-    httpPost.setEntity(asStringEntity(request.body()));
+    httpPost.setEntity(asStringEntity(request.body));
     return httpPost;
   }
 

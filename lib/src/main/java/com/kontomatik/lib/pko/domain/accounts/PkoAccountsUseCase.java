@@ -4,6 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kontomatik.lib.GsonUtils;
 import com.kontomatik.lib.HttpClient;
+import com.kontomatik.lib.HttpClient.PostRequest;
+import com.kontomatik.lib.HttpClient.Response;
 import com.kontomatik.lib.pko.domain.PkoConstants;
 import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession;
 
@@ -17,21 +19,18 @@ public class PkoAccountsUseCase {
   }
 
   public Accounts fetchAccounts(LoggedInPkoSession loggedInPkoSession) {
-    HttpClient.PostRequest postRequest = prepareAccountsRequest(loggedInPkoSession);
-    HttpClient.Response response = httpClient.post("/init", postRequest);
+    PostRequest postRequest = prepareAccountsRequest(loggedInPkoSession);
+    Response response = httpClient.post("/init", postRequest);
     Map<String, JsonElement> accounts = response.extractMap("response", "data", "accounts");
     return parseAccounts(accounts);
   }
 
-  private static HttpClient.PostRequest prepareAccountsRequest(LoggedInPkoSession loggedInPkoSession) {
-    AccountsRequest accountsRequest = AccountsRequest.newRequest();
-    return new HttpClient.PostRequest(
-      Map.of(
-        "accept", "application/json",
-        PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loggedInPkoSession)
-      ),
-      accountsRequest
-    );
+  private static PostRequest prepareAccountsRequest(LoggedInPkoSession loggedInPkoSession) {
+    return PostRequest.Builder
+      .withStandardHeaders()
+      .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loggedInPkoSession))
+      .withBody(AccountsRequest.newRequest())
+      .build();
   }
 
   private static String extractPkoSessionId(LoggedInPkoSession loggedInPkoSession) {
@@ -46,6 +45,7 @@ public class PkoAccountsUseCase {
     );
   }
 
+  //TODO remove dependency on gson?
   private static Account parseAccount(JsonObject jsonAccount) {
     return new Account(
       new Account.Name(GsonUtils.extractString(jsonAccount, "name")),
