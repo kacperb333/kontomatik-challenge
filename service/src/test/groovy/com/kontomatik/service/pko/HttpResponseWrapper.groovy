@@ -1,4 +1,4 @@
-package com.kontomatik.service
+package com.kontomatik.service.pko
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatusCode

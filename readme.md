@@ -7,7 +7,7 @@ Mongodb is used as a database.
 Fetched account information is available for 24h.
 
 # How?
-## Log in to a PKO BP bank account
+## Sign in to a PKO BP bank account
 ```
 POST /session
 ```
