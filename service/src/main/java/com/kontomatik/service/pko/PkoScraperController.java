@@ -1,18 +1,13 @@
 package com.kontomatik.service.pko;
 
 import com.kontomatik.lib.pko.domain.accounts.Account;
-import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.signin.Credentials;
 import com.kontomatik.lib.pko.domain.signin.Otp;
-import com.kontomatik.service.pko.domain.AccountsImport;
-import com.kontomatik.service.pko.domain.SessionId;
-import com.kontomatik.service.pko.domain.SessionService;
+import com.kontomatik.service.pko.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 class PkoScraperController {
@@ -51,10 +46,10 @@ class PkoScraperController {
   ResponseEntity<AccountsResponse> fetchSingleImport(
     @RequestHeader(SESSION_HEADER) SessionId sessionId
   ) {
-    AccountsImport importedAccounts = sessionService.getSessionAccountsImport(sessionId);
-    return ResponseEntity.ok(
-      AccountsResponse.from(importedAccounts.data(), importedAccounts.isFailed())
-    );
+    return sessionService.findSessionAccountsImport(sessionId)
+      .map(AccountsResponse::from)
+      .map(ResponseEntity::ok)
+      .orElse(ResponseEntity.ok().build());
   }
 
   private static HttpHeaders sessionHeader(SessionId sessionId) {
@@ -73,16 +68,27 @@ class PkoScraperController {
   ) {
   }
 
-  private record AccountsResponse(
-    boolean isFailed,
-    List<AccountResponse> accounts
+  record AccountsResponse(
+    Object data
   ) {
-    static AccountsResponse from(Accounts accounts, boolean isFailed) {
-      return new AccountsResponse(
-        isFailed,
-        accounts.list().stream()
-          .map(AccountResponse::from)
+    static PkoScraperController.AccountsResponse from(FinishedImport accountsImport) {
+      return switch (accountsImport) {
+        case SuccessfulImport i -> success(i);
+        case FailedImport i -> error(i);
+      };
+    }
+
+    static PkoScraperController.AccountsResponse success(SuccessfulImport successfulImport) {
+      return new PkoScraperController.AccountsResponse(
+        successfulImport.accounts().list().stream()
+          .map(PkoScraperController.AccountsResponse.AccountResponse::from)
           .toList()
+      );
+    }
+
+    static PkoScraperController.AccountsResponse error(FailedImport failedImport) {
+      return new PkoScraperController.AccountsResponse(
+        String.format("Import failed for session ['%s']", failedImport.sessionId().value())
       );
     }
 
@@ -98,7 +104,6 @@ class PkoScraperController {
           account.balance().currency().value()
         );
       }
-
     }
   }
 }

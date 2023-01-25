@@ -7,11 +7,11 @@ public record ImportInProgressSession(
   SessionId sessionId,
   LoggedInPkoSession pkoSession
 ) {
-  ImportFinishedSession finishSuccessful(Accounts accounts) {
-    return new ImportFinishedSession(sessionId, accounts);
+  SuccessfulImport finishSuccessful(Accounts accounts) {
+    return new SuccessfulImport(sessionId, accounts);
   }
 
-  ImportFailedSession finishFailed() {
-    return new ImportFailedSession(sessionId);
+  FailedImport finishFailed() {
+    return new FailedImport(sessionId);
   }
 }

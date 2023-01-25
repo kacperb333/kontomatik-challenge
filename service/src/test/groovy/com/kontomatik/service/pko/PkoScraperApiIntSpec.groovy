@@ -64,16 +64,13 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockSpec {
     otpResponse.statusCode == HttpStatus.OK
 
     when: 'until accounts fetch finishes we get empty OK response'
-    HttpResponseWrapper emptyAccountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
+    HttpResponseWrapper emptyResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
 
     then:
-    emptyAccountsResponse.statusCode == HttpStatus.OK
+    emptyResponse.statusCode == HttpStatus.OK
 
     and:
-    with(new JsonSlurper().parseText(emptyAccountsResponse.body)) {
-      it.accounts.isEmpty()
-      !it.isFailed
-    }
+    emptyResponse.body == null
 
     when: 'after accounts fetch finishes we get OK with accounts details'
     importLatch.countDown()
@@ -83,17 +80,16 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockSpec {
       HttpResponseWrapper accountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
       accountsResponse.statusCode == HttpStatus.OK
       with(new JsonSlurper().parseText(accountsResponse.body)) {
-        !it.isFailed
-        it.accounts.size() == 3
-        with(it.accounts.find { it.name == "account-1" }) {
+        it.data.size() == 3
+        with(it.data.find { it.name == "account-1" }) {
           it.balance == "1000.00"
           it.currency == "PLN"
         }
-        with(it.accounts.find { it.name == "account-2" }) {
+        with(it.data.find { it.name == "account-2" }) {
           it.balance == "2000.00"
           it.currency == "EUR"
         }
-        with(it.accounts.find { it.name == "account-3" }) {
+        with(it.data.find { it.name == "account-3" }) {
           it.balance == "3000.00"
           it.currency == "USD"
         }
@@ -165,11 +161,11 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockSpec {
 
     then:
     poll.eventually {
-      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
+      String importSessionId = extractSessionId(otpResponse)
+      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(importSessionId)
       accountsResponse.statusCode == HttpStatus.OK
       with(new JsonSlurper().parseText(accountsResponse.body)) {
-        it.accounts.isEmpty()
-        it.isFailed
+        it.data == "Import failed for session ['$importSessionId']"
       }
     }
   }

@@ -1,6 +1,6 @@
 package com.kontomatik.service.pko.domain;
 
-public record ImportFailedSession(
+public record FailedImport(
   SessionId sessionId
-) {
+) implements FinishedImport {
 }

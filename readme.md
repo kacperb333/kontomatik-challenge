@@ -40,25 +40,27 @@ Returns ```x-session``` header that can be used to fetch accounts information.
 GET /session/accounts
 x-session: ***
 ```
-If accounts data has not been imported yet returns:
-```json
-{
-  "isFailed": false,
-  "accounts": []
-}
+If accounts data has not been imported yet returns 
 ```
+200 OK
+```
+
 If accounts data import failed returns:
+```
+200 OK
+```
 ```json
 {
-  "isFailed": true,
-  "accounts": []
+  "data": "Import failed"
 }
 ```
 After accounts data has been imported successfully returns (example):
+```
+200 OK
+```
 ```json
 {
-  "isFailed": false,
-  "accounts": [
+  "data": [
     {
       "name": "Account name",
       "balance": "100.00",
