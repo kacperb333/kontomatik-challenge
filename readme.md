@@ -70,10 +70,10 @@ After accounts data has been imported successfully returns (example):
 }
 ```
 
-# How to setup database
-Configure mongodb port (default `spring.data.mongodb.port: 27017`) in `service/src/main/resources/application.yml`
+# How to configure custom database
+Configure mongodb connection in `service/src/main/resources/application.yml`
 
 # How to build and run?
-```./gradlew clean build``` in order to perform clean build of application.
-
-```./gradlew bootRun``` in order to start application (runs on 8080 port by default).  
+1. Install `docker`.
+2. ```./gradlew clean build``` in order to perform clean build of application. 
+3. ```docker-compose up``` in order to start application (runs on 8080 port by default).
