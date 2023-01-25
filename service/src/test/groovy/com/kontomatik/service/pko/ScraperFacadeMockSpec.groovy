@@ -1,6 +1,7 @@
 package com.kontomatik.service.pko
 
 import com.kontomatik.lib.pko.PkoScraperFacade
+import com.kontomatik.lib.pko.domain.accounts.Accounts
 import com.kontomatik.lib.pko.domain.signin.*
 import com.kontomatik.service.BaseIntegrationSpec
 import org.spockframework.spring.SpringBean
@@ -51,6 +52,10 @@ class ScraperFacadeMockSpec extends BaseIntegrationSpec {
     Closure otpClosure
   ) {
     this.pkoScraperFacade.inputOtp(testOtpRequiredPkoSession(), otp) >> { otpClosure() }
+  }
+
+  void stubDefaultAccounts() {
+    stubAccounts { new Accounts([]) }
   }
 
   void stubAccounts(

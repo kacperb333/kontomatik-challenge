@@ -1,14 +1,19 @@
 package com.kontomatik.service
 
+import com.kontomatik.service.common.DateTimeProvider
+import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.MongoDBContainer
 import spock.lang.Specification
+
+import java.time.Instant
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration
@@ -21,6 +26,9 @@ abstract class BaseIntegrationSpec extends Specification {
 
   @Autowired
   MongoTemplate mongoTemplate
+
+  @SpringBean
+  DateTimeProvider dateTimeProvider = Stub()
 
   @DynamicPropertySource
   static void mongoProperties(DynamicPropertyRegistry registry) {
@@ -36,11 +44,19 @@ abstract class BaseIntegrationSpec extends Specification {
   }
 
   def setup() {
-    dropAllCollections()
+    clearAllCollections()
   }
 
-  private void dropAllCollections() {
-    mongoTemplate.collectionNames.forEach { mongoTemplate.dropCollection(it) }
+  void stubTimeToNow() {
+    dateTimeProvider.now() >> { Instant.now() }
+  }
+
+  void stubTimeTo(Instant instant) {
+    dateTimeProvider.now() >> instant
+  }
+
+  private void clearAllCollections() {
+    mongoTemplate.collectionNames.forEach { mongoTemplate.remove(new Query(), it) }
   }
 }
 
