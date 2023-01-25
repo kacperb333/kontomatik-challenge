@@ -11,10 +11,10 @@ import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession;
 
 import java.util.Map;
 
-public class PkoAccountsUseCase {
+public class AccountsUseCase {
   private final HttpClient httpClient;
 
-  public PkoAccountsUseCase(HttpClient httpClient) {
+  public AccountsUseCase(HttpClient httpClient) {
     this.httpClient = httpClient;
   }
 
@@ -45,7 +45,6 @@ public class PkoAccountsUseCase {
     );
   }
 
-  //TODO remove dependency on gson?
   private static Account parseAccount(JsonObject jsonAccount) {
     return new Account(
       new Account.Name(GsonUtils.extractString(jsonAccount, "name")),

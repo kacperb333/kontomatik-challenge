@@ -12,7 +12,7 @@ import static ServiceClient.extractSessionId
 import static java.time.temporal.ChronoUnit.HOURS
 import static java.time.temporal.ChronoUnit.MINUTES
 
-class PkoScraperApiIntSpec extends ScraperFacadeMockSpec {
+class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
   PollingConditions poll = new PollingConditions(timeout: 70)
   ServiceClient serviceClient

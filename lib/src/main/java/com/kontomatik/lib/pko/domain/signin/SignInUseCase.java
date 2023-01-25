@@ -3,15 +3,14 @@ package com.kontomatik.lib.pko.domain.signin;
 import com.kontomatik.lib.HttpClient;
 import com.kontomatik.lib.HttpClient.PostRequest;
 import com.kontomatik.lib.HttpClient.Response;
-import com.kontomatik.lib.pko.PkoScraperFacade;
 import com.kontomatik.lib.pko.domain.PkoConstants;
 
 import java.util.Objects;
 
-public class PkoSignInUseCase {
+public class SignInUseCase {
   private final HttpClient httpClient;
 
-  public PkoSignInUseCase(HttpClient httpClient) {
+  public SignInUseCase(HttpClient httpClient) {
     this.httpClient = httpClient;
   }
 

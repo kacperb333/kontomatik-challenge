@@ -1,5 +1,8 @@
 package com.kontomatik.lib.pko.domain.accounts;
 
+
+import static com.kontomatik.lib.pko.domain.accounts.AccountsRequest.AccountsRequestData.ACCOUNTS_MARKER;
+
 record AccountsRequest(
   Integer version,
   AccountsRequestData data
@@ -9,17 +12,13 @@ record AccountsRequest(
   static AccountsRequest newRequest() {
     return new AccountsRequest(
       REQUEST_VERSION,
-      new AccountsRequestData(
-        new AccountsMarker()
-      )
+      ACCOUNTS_MARKER
     );
   }
 
   record AccountsRequestData(
-    AccountsMarker accounts
+    Object accounts
   ) {
-  }
-
-  public record AccountsMarker() {
+    static AccountsRequestData ACCOUNTS_MARKER = new AccountsRequestData(new Object());
   }
 }

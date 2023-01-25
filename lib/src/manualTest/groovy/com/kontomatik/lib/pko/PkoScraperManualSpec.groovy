@@ -13,7 +13,7 @@ import static ManualTestUtils.readFromFile
 class PkoScraperManualSpec extends Specification {
 
   PollingConditions pollingConditions = new PollingConditions(timeout: 30)
-  PkoScraperFacade pkoScraperFacade = PkoScraperFacade.pkoScraperFacade()
+  ScraperFacade pkoScraperFacade = ScraperFacade.scraperFacade()
 
   def "should sign in and fetch accounts"() {
     given: 'login is provided via resources/login.txt file'

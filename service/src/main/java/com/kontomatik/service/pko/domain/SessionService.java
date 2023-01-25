@@ -1,6 +1,6 @@
 package com.kontomatik.service.pko.domain;
 
-import com.kontomatik.lib.pko.PkoScraperFacade;
+import com.kontomatik.lib.pko.ScraperFacade;
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.signin.Credentials;
 import com.kontomatik.lib.pko.domain.signin.Otp;
@@ -13,13 +13,13 @@ import java.util.Optional;
 @Service
 public class SessionService {
   private static final Logger log = LoggerFactory.getLogger(SessionService.class);
-  private final PkoScraperFacade pkoScraperFacade;
+  private final ScraperFacade pkoScraperFacade;
   private final SessionRepository sessionRepository;
   private final AccountsImportRepository accountsImportRepository;
   private final AccountsImportScheduler accountsImportScheduler;
 
   SessionService(
-    PkoScraperFacade pkoScraperFacade,
+    ScraperFacade pkoScraperFacade,
     SessionRepository sessionRepository,
     AccountsImportRepository accountsImportRepository,
     AccountsImportScheduler accountsImportScheduler

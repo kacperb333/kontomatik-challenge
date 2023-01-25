@@ -1,12 +1,12 @@
 package com.kontomatik.service.pko
 
-import com.kontomatik.lib.pko.PkoScraperFacade
+import com.kontomatik.lib.pko.ScraperFacade
 import com.kontomatik.lib.pko.domain.accounts.Accounts
 import com.kontomatik.lib.pko.domain.signin.*
 import com.kontomatik.service.BaseIntegrationSpec
 import org.spockframework.spring.SpringBean
 
-class ScraperFacadeMockSpec extends BaseIntegrationSpec {
+abstract class ScraperFacadeMockBaseSpec extends BaseIntegrationSpec {
 
   final String CORRECT_LOGIN = "test-login"
   final String CORRECT_PASSWORD = "test-password"
@@ -21,7 +21,7 @@ class ScraperFacadeMockSpec extends BaseIntegrationSpec {
   final String ERROR_OTP = "error-otp"
 
   @SpringBean
-  PkoScraperFacade pkoScraperFacade = Stub()
+  ScraperFacade pkoScraperFacade = Stub()
 
   def setup() {
     stubDefaultSignIn()

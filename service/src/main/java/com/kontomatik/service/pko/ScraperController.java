@@ -10,11 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-class PkoScraperController {
+class ScraperController {
   private final SessionService sessionService;
   static final String SESSION_HEADER = "x-session";
 
-  PkoScraperController(
+  ScraperController(
     SessionService sessionService
   ) {
     this.sessionService = sessionService;
@@ -71,23 +71,23 @@ class PkoScraperController {
   record AccountsResponse(
     Object data
   ) {
-    static PkoScraperController.AccountsResponse from(FinishedImport accountsImport) {
+    static ScraperController.AccountsResponse from(FinishedImport accountsImport) {
       return switch (accountsImport) {
         case SuccessfulImport i -> success(i);
         case FailedImport i -> error(i);
       };
     }
 
-    static PkoScraperController.AccountsResponse success(SuccessfulImport successfulImport) {
-      return new PkoScraperController.AccountsResponse(
+    static ScraperController.AccountsResponse success(SuccessfulImport successfulImport) {
+      return new ScraperController.AccountsResponse(
         successfulImport.accounts().list().stream()
-          .map(PkoScraperController.AccountsResponse.AccountResponse::from)
+          .map(ScraperController.AccountsResponse.AccountResponse::from)
           .toList()
       );
     }
 
-    static PkoScraperController.AccountsResponse error(FailedImport failedImport) {
-      return new PkoScraperController.AccountsResponse(
+    static ScraperController.AccountsResponse error(FailedImport failedImport) {
+      return new ScraperController.AccountsResponse(
         String.format("Import failed for session ['%s']", failedImport.sessionId().value())
       );
     }

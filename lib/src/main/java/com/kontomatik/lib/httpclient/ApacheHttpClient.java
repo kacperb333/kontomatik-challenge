@@ -14,8 +14,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,7 +22,6 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 public class ApacheHttpClient implements HttpClient {
-  private static final Logger log = LoggerFactory.getLogger(ApacheHttpClient.class);
   private final HttpClientBuilder apacheClientBuilder;
   private final String baseUrl;
 

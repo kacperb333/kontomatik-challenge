@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
-class PkoScraperExceptionHandler {
-  private static final Logger log = LoggerFactory.getLogger(PkoScraperExceptionHandler.class);
+class ScraperExceptionHandler {
+  private static final Logger log = LoggerFactory.getLogger(ScraperExceptionHandler.class);
 
   @ExceptionHandler(InvalidCredentials.class)
   ResponseEntity<ErrorMessage> handle(InvalidCredentials ex) {

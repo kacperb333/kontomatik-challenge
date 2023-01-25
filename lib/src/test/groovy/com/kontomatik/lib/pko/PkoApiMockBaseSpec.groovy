@@ -3,26 +3,58 @@ package com.kontomatik.lib.pko
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.kontomatik.lib.pko.domain.PkoConstants
+import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
+import spock.lang.Specification
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*
 import static groovy.json.JsonOutput.toJson
 
-class PkoApiMock {
+abstract class PkoApiMockBaseSpec extends Specification {
 
-  private WireMockServer wireMock
+  private WireMockServer wireMock = new WireMockServer(8090)
 
-  PkoApiMock(WireMockServer wireMock) {
-    this.wireMock = wireMock
-  }
-
-  void start() {
+  def setup() {
     wireMock.start()
+    stubPkoLogin(CORRECT_LOGIN, successfulLoginResponse())
+    stubPkoLogin(INCORRECT_LOGIN, wrongLoginResponse())
+    stubPkoPassword(CORRECT_PASSWORD, successfulPasswordResponse())
+    stubPkoPassword(INCORRECT_PASSWORD, wrongPasswordResponse())
+    stubPkoOtp(CORRECT_OTP, successfulOtpResponse())
+    stubPkoOtp(INCORRECT_OTP, wrongOtpResponse())
+    stubPkoAccounts(successfulAccountsResponse(CORRECT_RETURNED_ACCOUNTS))
+
   }
 
-  void stop() {
+  def cleanup() {
     wireMock.stop()
   }
+
+  static String CORRECT_LOGIN = "correct-login"
+  static String INCORRECT_LOGIN = "incorrect-login"
+
+  static String CORRECT_PASSWORD = "correct-password"
+  static String INCORRECT_PASSWORD = "incorrect-password"
+
+  static String CORRECT_OTP = "correct-otp"
+  static String INCORRECT_OTP = "incorrect-otp"
+
+  static Accounts CORRECT_RETURNED_ACCOUNTS = new Accounts([
+    new Account(
+      new Account.Name("account-1"),
+      new Account.Balance(
+        new Account.Balance.Amount("2000.00"),
+        new Account.Balance.Currency("PLN")
+      )
+    ),
+    new Account(
+      new Account.Name("account-2"),
+      new Account.Balance(
+        new Account.Balance.Amount("3000.00"),
+        new Account.Balance.Currency("EUR")
+      )
+    )
+  ])
 
   static String loginRequest(String login) {
     return """
@@ -150,22 +182,6 @@ class PkoApiMock {
         }
       }
     """)
-  }
-
-  static ResponseDefinitionBuilder malformedResponse() {
-    return okJson("""
-      {
-        "something": "wrong"
-      }
-    """)
-  }
-
-  static ResponseDefinitionBuilder badRequestResponse() {
-    return badRequest()
-  }
-
-  static ResponseDefinitionBuilder serviceUnavailableResponse() {
-    return serviceUnavailable()
   }
 
   void stubPkoLogin(String login, ResponseDefinitionBuilder jsonResponse) {

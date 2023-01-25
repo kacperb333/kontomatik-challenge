@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 
-import static com.kontomatik.service.pko.PkoScraperController.SESSION_HEADER
+import static ScraperController.SESSION_HEADER
 
 class ServiceClient {
 
