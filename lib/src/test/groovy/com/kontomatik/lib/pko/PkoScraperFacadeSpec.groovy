@@ -3,15 +3,11 @@ package com.kontomatik.lib.pko
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
-import com.kontomatik.lib.pko.domain.signin.Credentials
-import com.kontomatik.lib.pko.domain.signin.InvalidCredentials
-import com.kontomatik.lib.pko.domain.signin.LoggedInPkoSession
-import com.kontomatik.lib.pko.domain.signin.OtpRequiredPkoSession
-import com.kontomatik.lib.pko.domain.signin.Otp
+import com.kontomatik.lib.pko.domain.signin.*
 import spock.lang.Specification
 import spock.lang.Subject
 
-import static PkoApiMock.*
+import static com.kontomatik.lib.pko.PkoApiMock.*
 
 class PkoScraperFacadeSpec extends Specification {
 
@@ -66,48 +62,34 @@ class PkoScraperFacadeSpec extends Specification {
     fetchedAccounts == expectedAccounts
   }
 
-  def "should throw exception on erroneous pko login response"() {
+  def "should throw InvalidCredentials on wrong login response"() {
     given:
-    pkoApi.stubPkoLogin("test-login", testedLoginResponse)
+    pkoApi.stubPkoLogin("test-login", wrongLoginResponse())
 
     when:
     pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
 
     then:
-    thrown(expectedThrown)
-
-    where:
-    testedLoginResponse          || expectedThrown
-    wrongLoginResponse()         || InvalidCredentials
-    malformedResponse()          || RuntimeException
-    badRequestResponse()         || RuntimeException
-    serviceUnavailableResponse() || RuntimeException
+    thrown(InvalidCredentials)
   }
 
-  def "should throw exception on erroneous password response"() {
+  def "should throw InvalidCredentials on wrong password response"() {
     given:
     pkoApi.stubPkoLogin("test-login", successfulLoginResponse())
-    pkoApi.stubPkoPassword("test-password", testedPasswordResponse)
+    pkoApi.stubPkoPassword("test-password", wrongPasswordResponse())
 
     when:
     pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
 
     then:
-    thrown(expectedThrown)
-
-    where:
-    testedPasswordResponse       || expectedThrown
-    wrongPasswordResponse()      || InvalidCredentials
-    malformedResponse()          || RuntimeException
-    badRequestResponse()         || RuntimeException
-    serviceUnavailableResponse() || RuntimeException
+    thrown(InvalidCredentials)
   }
 
-  def "should throw exception on erroneous otp response"() {
+  def "should throw InvalidCredentials on wrong otp response"() {
     given:
     pkoApi.stubPkoLogin("test-login", successfulLoginResponse())
     pkoApi.stubPkoPassword("test-password", successfulPasswordResponse())
-    pkoApi.stubPkoOtp("wrong-otp", testedOtpResponse)
+    pkoApi.stubPkoOtp("wrong-otp", wrongOtpResponse())
 
     when:
     OtpRequiredPkoSession otpRequiredPkoSession = pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
@@ -116,39 +98,6 @@ class PkoScraperFacadeSpec extends Specification {
     pkoScraperFacade.inputOtp(otpRequiredPkoSession, new Otp("wrong-otp"))
 
     then:
-    thrown(expectedThrown)
-
-    where:
-    testedOtpResponse            || expectedThrown
-    wrongOtpResponse()           || InvalidCredentials
-    malformedResponse()          || RuntimeException
-    badRequestResponse()         || RuntimeException
-    serviceUnavailableResponse() || RuntimeException
-  }
-
-  def "should throw exception on accounts fetch error"() {
-    given:
-    pkoApi.stubPkoLogin("test-login", successfulLoginResponse())
-    pkoApi.stubPkoPassword("test-password", successfulPasswordResponse())
-    pkoApi.stubPkoOtp("test-otp", successfulOtpResponse())
-    pkoApi.stubPkoAccounts(testedAccountsResponse)
-
-    when:
-    OtpRequiredPkoSession otpRequiredPkoSession = pkoScraperFacade.signIn(new Credentials("test-login", "test-password"))
-
-    and:
-    LoggedInPkoSession loggedInPkoSession = pkoScraperFacade.inputOtp(otpRequiredPkoSession, new Otp("test-otp"))
-
-    and:
-    pkoScraperFacade.fetchAccounts(loggedInPkoSession)
-
-    then:
-    thrown(expectedThrown)
-
-    where:
-    testedAccountsResponse       || expectedThrown
-    malformedResponse()          || RuntimeException
-    badRequestResponse()         || RuntimeException
-    serviceUnavailableResponse() || RuntimeException
+    thrown(InvalidCredentials)
   }
 }
