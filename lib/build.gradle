@@ -36,3 +36,18 @@ test {
 tasks.withType(JavaCompile).each {
   it.options.compilerArgs.add('--enable-preview')
 }
+
+sourceSets {
+  manualTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir "$projectDir/src/testManual/groovy"
+    }
+    resources.srcDir "$projectDir/src/testManual/resources"
+  }
+}
+
+configurations {
+  manualTestImplementation.extendsFrom testImplementation
+}
