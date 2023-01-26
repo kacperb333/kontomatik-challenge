@@ -80,7 +80,7 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     when: 'after accounts fetch finishes we get OK with accounts details'
     importLatch.countDown()
 
-    then: 'until accounts fetch finishes we get empty OK response'
+    then:
     poll.eventually {
       HttpResponseWrapper accountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
       accountsResponse.statusCode == HttpStatus.OK

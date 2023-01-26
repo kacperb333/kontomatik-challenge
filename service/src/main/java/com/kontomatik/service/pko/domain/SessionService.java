@@ -58,12 +58,12 @@ public class SessionService {
   private void importAccounts(ImportInProgressSession importInProgressSession) {
     try {
       Accounts accounts = pkoScraperFacade.fetchAccounts(importInProgressSession.pkoSession());
-      SuccessfulImport finishedSession = importInProgressSession.finishSuccessful(accounts);
-      accountsImportRepository.save(finishedSession);
+      SuccessfulImport successfulImport = importInProgressSession.finishSuccessful(accounts);
+      accountsImportRepository.save(successfulImport);
     } catch (Exception e) {
       log.error("Encountered exception during import", e);
-      FailedImport finishedSession = importInProgressSession.finishFailed();
-      accountsImportRepository.save(finishedSession);
+      FailedImport failedImport = importInProgressSession.finishFailed();
+      accountsImportRepository.save(failedImport);
     }
   }
 
