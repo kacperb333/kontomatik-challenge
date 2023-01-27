@@ -23,13 +23,10 @@ import java.util.stream.Collectors;
 
 public class ApacheHttpClient implements HttpClient {
   private final HttpClientBuilder apacheClientBuilder;
-  private final String baseUrl;
 
   public ApacheHttpClient(
-    String baseUrl,
     HttpClientBuilder apacheClientBuilder
   ) {
-    this.baseUrl = baseUrl;
     this.apacheClientBuilder = apacheClientBuilder;
   }
 
@@ -39,7 +36,7 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   private HttpPost preparePost(PostRequest request) {
-    HttpPost httpPost = new HttpPost(baseUrl + request.url());
+    HttpPost httpPost = new HttpPost(request.url());
     request.headers().forEach(httpPost::addHeader);
     httpPost.setEntity(asStringEntity(request.body()));
     return httpPost;

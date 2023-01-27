@@ -2,14 +2,37 @@ package com.kontomatik.lib.pko
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.kontomatik.lib.pko.domain.PkoConstants
+import org.apache.http.HttpHost
+import org.apache.http.conn.ssl.NoopHostnameVerifier
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory
+import org.apache.http.conn.ssl.TrustAllStrategy
+import org.apache.http.conn.ssl.TrustStrategy
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.ssl.SSLContexts
 import spock.lang.Specification
+
+import javax.net.ssl.SSLContext
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*
 
 abstract class PkoApiMockBaseSpec extends Specification {
 
-  private WireMockServer wireMock = new WireMockServer(8090)
+  private WireMockServer wireMock = new WireMockServer(
+    WireMockConfiguration.options()
+      .enableBrowserProxying(true)
+      .port(8090)
+  )
+
+  HttpClientBuilder configureApacheHttpTestProxy() {
+    TrustStrategy acceptingTrustStrategy = new TrustAllStrategy()
+    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(acceptingTrustStrategy).build();
+    SSLConnectionSocketFactory connectionSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+    HttpClientBuilder.create()
+      .setProxy(HttpHost.create("http://localhost:8090"))
+      .setSSLSocketFactory(connectionSocketFactory)
+  }
 
   def setup() {
     wireMock.start()

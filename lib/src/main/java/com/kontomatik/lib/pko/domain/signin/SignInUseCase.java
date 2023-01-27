@@ -37,7 +37,7 @@ public class SignInUseCase {
   private static PostRequest prepareLoginRequest(String login) {
     return PostRequest.Builder
       .jsonRequest()
-      .withUrl("/login")
+      .withUrl("https://www.ipko.pl/ipko3/login")
       .withBody(PkoSignInRequest.newRequest(login))
       .build();
   }
@@ -72,7 +72,7 @@ public class SignInUseCase {
   private static PostRequest preparePasswordRequest(String password, PasswordRequiredPkoSession passwordRequiredPkoSession) {
     return PostRequest.Builder
       .jsonRequest()
-      .withUrl("/login")
+      .withUrl("https://www.ipko.pl/ipko3/login")
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(passwordRequiredPkoSession))
       .withBody(PkoPasswordRequest.newRequest(password, passwordRequiredPkoSession))
       .build();
@@ -108,7 +108,7 @@ public class SignInUseCase {
   private static PostRequest prepareOtpRequest(String otp, OtpRequiredPkoSession loginInProgressPkoSession) {
     return PostRequest.Builder
       .jsonRequest()
-      .withUrl("/login")
+      .withUrl("https://www.ipko.pl/ipko3/login")
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loginInProgressPkoSession))
       .withBody(PkoOtpRequest.newRequest(otp, loginInProgressPkoSession))
       .build();

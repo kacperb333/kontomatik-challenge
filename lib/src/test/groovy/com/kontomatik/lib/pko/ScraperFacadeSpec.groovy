@@ -8,7 +8,7 @@ import spock.lang.Subject
 class ScraperFacadeSpec extends PkoApiMockBaseSpec {
 
   @Subject
-  ScraperFacade pkoScraperFacade = ScraperFacade.scraperFacade("http://localhost:8090/ipko3")
+  ScraperFacade pkoScraperFacade = ScraperFacade.scraperFacade(configureApacheHttpTestProxy())
 
   def "should fetch accounts info after successful login and otp input"() {
     when:

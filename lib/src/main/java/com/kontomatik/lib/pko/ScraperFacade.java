@@ -13,11 +13,11 @@ public class ScraperFacade {
   private final AccountsUseCase pkoAccountsUseCase;
 
   public static ScraperFacade scraperFacade() {
-    return scraperFacade("https://www.ipko.pl/ipko3");
+    return scraperFacade(HttpClientBuilder.create());
   }
 
-  static ScraperFacade scraperFacade(String baseUrl) {
-    HttpClient httpClient = new ApacheHttpClient(baseUrl, HttpClientBuilder.create());
+  static ScraperFacade scraperFacade(HttpClientBuilder httpClientBuilder) {
+    HttpClient httpClient = new ApacheHttpClient(httpClientBuilder);
     var pkoSignInUseCase = new SignInUseCase(httpClient);
     var pkoAccountsUseCase = new AccountsUseCase(httpClient);
     return new ScraperFacade(pkoSignInUseCase, pkoAccountsUseCase);

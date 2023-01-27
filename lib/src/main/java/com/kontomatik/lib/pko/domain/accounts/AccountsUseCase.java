@@ -28,7 +28,7 @@ public class AccountsUseCase {
   private static PostRequest prepareAccountsRequest(LoggedInPkoSession loggedInPkoSession) {
     return PostRequest.Builder
       .jsonRequest()
-      .withUrl("/init")
+      .withUrl("https://www.ipko.pl/ipko3/init")
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loggedInPkoSession))
       .withBody(AccountsRequest.newRequest())
       .build();
