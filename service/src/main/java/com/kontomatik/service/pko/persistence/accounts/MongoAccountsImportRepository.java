@@ -4,8 +4,8 @@ import com.kontomatik.service.common.DateTimeProvider;
 import com.kontomatik.service.pko.domain.AccountsImportRepository;
 import com.kontomatik.service.pko.domain.FinishedImport;
 import com.kontomatik.service.pko.domain.FinishedImport.FailedImport;
+import com.kontomatik.service.pko.domain.FinishedImport.ImportId;
 import com.kontomatik.service.pko.domain.FinishedImport.SuccessfulImport;
-import com.kontomatik.service.pko.domain.SessionId;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -27,19 +27,19 @@ class MongoAccountsImportRepository implements AccountsImportRepository {
   public SuccessfulImport save(SuccessfulImport successfulImport) {
     var persistentSession = PersistentSuccessfulImport.fromDomain(successfulImport, dateTimeProvider.now());
     var saved = accountsImportRepository.save(persistentSession);
-    return new SuccessfulImport(saved.sessionId, saved.accounts);
+    return new SuccessfulImport(saved.importId, saved.accounts);
   }
 
   @Override
   public FailedImport save(FailedImport failedImport) {
     var persistentSession = PersistentFailedImport.fromDomain(failedImport, dateTimeProvider.now());
     var saved = accountsImportRepository.save(persistentSession);
-    return new FailedImport(saved.sessionId);
+    return new FailedImport(saved.importId);
   }
 
   @Override
-  public Optional<FinishedImport> findAccountsImport(SessionId sessionId) {
-    return accountsImportRepository.findById(sessionId)
+  public Optional<FinishedImport> findAccountsImport(ImportId importId) {
+    return accountsImportRepository.findById(importId)
       .map(PersistentImport::toDomain);
   }
 }

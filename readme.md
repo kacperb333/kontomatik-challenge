@@ -20,6 +20,10 @@ POST /session
 }
 ```
 Returns ```x-session``` header, that has to be used in following one time password request.
+```
+200 OK
+x-session: ***
+```
 
 ## Confirm login with one time password (sms)
 ```
@@ -33,16 +37,23 @@ x-session: ***
   }
 }
 ```
-Returns ```x-session``` header that can be used to fetch accounts information.
+Returns ```importId``` that can be used to fetch accounts information.
+```
+200 OK
+```
+```json
+{
+  "importId": "***"
+}
+```
 
 ## Fetch accounts information
 ```
-GET /session/accounts
-x-session: ***
+GET /accounts?importId=***
 ```
 If accounts data has not been imported yet returns 
 ```
-200 OK
+204 NO CONTENT
 ```
 
 If accounts data import failed returns:
@@ -51,7 +62,7 @@ If accounts data import failed returns:
 ```
 ```json
 {
-  "data": "Import failed"
+  "data": "Import failed."
 }
 ```
 After accounts data has been imported successfully returns (example):

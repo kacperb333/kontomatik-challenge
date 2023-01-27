@@ -1,7 +1,7 @@
 package com.kontomatik.service.pko.utils
 
 
-import com.kontomatik.service.pko.ScraperController
+import groovy.json.JsonSlurper
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate
 
 class ServiceClient {
 
+  static String TEST_SESSION_HEADER = "x-session"
   final long servicePort
   private RestTemplate restTemplate = new RestTemplate()
 
@@ -18,7 +19,7 @@ class ServiceClient {
     this.servicePort = servicePort
   }
 
-    HttpResponseWrapper postSignIn(String login, String password) {
+  HttpResponseWrapper postSignIn(String login, String password) {
     return post(
       [
         "content-type": "application/json"
@@ -38,8 +39,8 @@ class ServiceClient {
   HttpResponseWrapper postOtp(String otp, String sessionId) {
     return post(
       [
-        "content-type"  : "application/json",
-        (ScraperController.SESSION_HEADER): sessionId
+        "content-type"       : "application/json",
+        (TEST_SESSION_HEADER): sessionId
       ],
       "/session/otp",
       """
@@ -52,12 +53,10 @@ class ServiceClient {
     )
   }
 
-  HttpResponseWrapper getAccounts(String sessionId) {
+  HttpResponseWrapper getAccounts(String importId) {
     get(
-      [
-        (ScraperController.SESSION_HEADER): sessionId
-      ],
-      "/session/accounts"
+      [:],
+      "/accounts?importId=$importId"
     )
   }
 
@@ -93,9 +92,5 @@ class ServiceClient {
     HttpHeaders headers = new HttpHeaders()
     toAdd.entrySet().forEach { headers.add(it.key, it.value) }
     return headers
-  }
-
-  static String extractSessionId(HttpResponseWrapper response) {
-    return response.headers.getFirst(ScraperController.SESSION_HEADER)
   }
 }

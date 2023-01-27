@@ -7,8 +7,8 @@ public record OtpRequiredSession(
   SessionId sessionId,
   OtpRequiredPkoSession pkoSession
 ) {
-  public ImportInProgressSession finishSignIn(LoggedInPkoSession loggedInPkoSession) {
-    return new ImportInProgressSession(
+  public LoggedInSession finishSignIn(LoggedInPkoSession loggedInPkoSession) {
+    return new LoggedInSession(
       sessionId,
       loggedInPkoSession
     );

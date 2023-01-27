@@ -1,10 +1,9 @@
 package com.kontomatik.service.pko;
 
-import com.kontomatik.lib.pko.domain.accounts.Account;
 import com.kontomatik.lib.pko.domain.signin.Credentials;
 import com.kontomatik.lib.pko.domain.signin.Otp;
-import com.kontomatik.service.pko.domain.FinishedImport;
 import com.kontomatik.service.pko.domain.FinishedImport.FailedImport;
+import com.kontomatik.service.pko.domain.FinishedImport.ImportId;
 import com.kontomatik.service.pko.domain.FinishedImport.SuccessfulImport;
 import com.kontomatik.service.pko.domain.SessionId;
 import com.kontomatik.service.pko.domain.SessionService;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 class ScraperController {
   private final SessionService sessionService;
-  static final String SESSION_HEADER = "x-session";
+  private static final String SESSION_HEADER = "x-session";
 
   ScraperController(
     SessionService sessionService
@@ -36,24 +35,27 @@ class ScraperController {
 
   @PostMapping("/session/otp")
   @ResponseStatus(HttpStatus.OK)
-  ResponseEntity<Void> inputOtp(
+  ResponseEntity<AccountsImportIdResponse> inputOtp(
     @RequestHeader(SESSION_HEADER) SessionId sessionId,
     @RequestBody OtpRequest request
   ) {
-    var inputOtpResult = sessionService.inputOtp(sessionId, request.otp());
-    return ResponseEntity.ok()
-      .headers(sessionHeader(inputOtpResult.sessionId()))
-      .build();
+    ImportId scheduledImportId = sessionService.inputOtp(sessionId, request.otp());
+    return ResponseEntity.ok(
+      new AccountsImportIdResponse(scheduledImportId.value())
+    );
   }
 
-  @GetMapping("/session/accounts")
-  ResponseEntity<AccountsResponse> fetchSingleImport(
-    @RequestHeader(SESSION_HEADER) SessionId sessionId
+  @GetMapping("/accounts")
+  ResponseEntity<?> fetchSingleImport(
+    @RequestParam ImportId importId
   ) {
-    return sessionService.findSessionAccountsImport(sessionId)
-      .map(AccountsResponse::from)
+    return sessionService.findAccountsImport(importId)
+      .map(finishedImport -> switch (finishedImport) {
+        case SuccessfulImport i -> AccountsResponse.from(i);
+        case FailedImport i -> FailedImportResponse.from(i);
+      })
       .map(ResponseEntity::ok)
-      .orElse(ResponseEntity.ok().build());
+      .orElse(ResponseEntity.noContent().build());
   }
 
   private static HttpHeaders sessionHeader(SessionId sessionId) {
@@ -70,45 +72,6 @@ class ScraperController {
   private record OtpRequest(
     Otp otp
   ) {
-  }
-
-  record AccountsResponse(
-    Object data
-  ) {
-    static ScraperController.AccountsResponse from(FinishedImport accountsImport) {
-      return switch (accountsImport) {
-        case SuccessfulImport i -> success(i);
-        case FailedImport i -> error(i);
-      };
-    }
-
-    static ScraperController.AccountsResponse success(SuccessfulImport successfulImport) {
-      return new ScraperController.AccountsResponse(
-        successfulImport.accounts().list().stream()
-          .map(ScraperController.AccountsResponse.AccountResponse::from)
-          .toList()
-      );
-    }
-
-    static ScraperController.AccountsResponse error(FailedImport failedImport) {
-      return new ScraperController.AccountsResponse(
-        String.format("Import failed for session ['%s']", failedImport.sessionId().value())
-      );
-    }
-
-    record AccountResponse(
-      String name,
-      String balance,
-      String currency
-    ) {
-      static AccountResponse from(Account account) {
-        return new AccountResponse(
-          account.name().value(),
-          account.balance().amount().value().toString(),
-          account.balance().currency().value()
-        );
-      }
-    }
   }
 }
 

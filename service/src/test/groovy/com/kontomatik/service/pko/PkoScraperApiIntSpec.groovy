@@ -10,7 +10,6 @@ import spock.util.concurrent.PollingConditions
 import java.time.Instant
 import java.util.concurrent.CountDownLatch
 
-import static com.kontomatik.service.pko.utils.ServiceClient.extractSessionId
 import static java.time.temporal.ChronoUnit.HOURS
 import static java.time.temporal.ChronoUnit.MINUTES
 
@@ -48,16 +47,18 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     logInResponse.statusCode == HttpStatus.OK
 
     when:
-    HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, extractSessionId(logInResponse))
+    HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, logInResponse.extractSessionId())
+    String importId = otpResponse.extractImportId()
 
     then:
     otpResponse.statusCode == HttpStatus.OK
+    importId != null
 
-    when: 'until accounts fetch finishes we get empty OK response'
-    HttpResponseWrapper emptyResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
+    when: 'until accounts fetch finishes we get NO_CONTENT response'
+    HttpResponseWrapper emptyResponse = serviceClient.getAccounts(importId)
 
     then:
-    emptyResponse.statusCode == HttpStatus.OK
+    emptyResponse.statusCode == HttpStatus.NO_CONTENT
 
     and:
     emptyResponse.body == null
@@ -67,11 +68,11 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
     then:
     poll.eventually {
-      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
+      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(importId)
       accountsResponse.statusCode == HttpStatus.OK
       jsonsEqual(accountsResponse.body, """
         {
-          "data": [
+          "accounts": [
             {
               "name": "account-1",
               "balance": "1000.00",
@@ -118,7 +119,7 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     HttpResponseWrapper signInResponse = serviceClient.postSignIn(CORRECT_LOGIN, CORRECT_PASSWORD)
 
     and:
-    HttpResponseWrapper otpResponse = serviceClient.postOtp(WRONG_OTP, extractSessionId(signInResponse))
+    HttpResponseWrapper otpResponse = serviceClient.postOtp(WRONG_OTP, signInResponse.extractSessionId())
 
     then:
     otpResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
@@ -155,7 +156,7 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     HttpResponseWrapper signInResponse = serviceClient.postSignIn(CORRECT_LOGIN, CORRECT_PASSWORD)
 
     and:
-    HttpResponseWrapper otpResponse = serviceClient.postOtp(ERROR_OTP, extractSessionId(signInResponse))
+    HttpResponseWrapper otpResponse = serviceClient.postOtp(ERROR_OTP, signInResponse.extractSessionId())
 
     then:
     otpResponse.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
@@ -178,16 +179,16 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     HttpResponseWrapper signInResponse = serviceClient.postSignIn(CORRECT_LOGIN, CORRECT_PASSWORD)
 
     and:
-    HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, extractSessionId(signInResponse))
+    HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, signInResponse.extractSessionId())
 
     then:
     poll.eventually {
-      String importSessionId = extractSessionId(otpResponse)
-      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(importSessionId)
+      String importId = otpResponse.extractImportId()
+      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(importId)
       accountsResponse.statusCode == HttpStatus.OK
       jsonsEqual(accountsResponse.body, """
         {
-          "data": "Import failed for session ['$importSessionId']"
+          "message": "Import ['$importId'] failed."
         }
       """)
     }
@@ -202,14 +203,15 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
     when:
     HttpResponseWrapper signInResponse = serviceClient.postSignIn(CORRECT_LOGIN, CORRECT_PASSWORD)
+    String sessionId = signInResponse.extractSessionId()
 
     then:
     retentionPoll.eventually {
-      HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, extractSessionId(signInResponse))
+      HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, sessionId)
       jsonsEqual(otpResponse.body, """
         {
           "code": "SessionNotFound",
-          "message": "Session with id [${extractSessionId(signInResponse)}] not found. Make sure proper x-session header is set."
+          "message": "Session with id [$sessionId] not found. Make sure proper x-session header is set."
         }
       """)
     }
@@ -224,19 +226,20 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
     when:
     HttpResponseWrapper logInResponse = serviceClient.postSignIn(CORRECT_LOGIN, CORRECT_PASSWORD)
-    HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, extractSessionId(logInResponse))
+    HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, logInResponse.extractSessionId())
+    String importId = otpResponse.extractImportId()
 
     then:
     poll.eventually {
-      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
+      HttpResponseWrapper accountsResponse = serviceClient.getAccounts(importId)
       accountsResponse.statusCode == HttpStatus.OK
       accountsResponse.body != null
     }
 
     and:
     retentionPoll.eventually {
-      HttpResponseWrapper emptyResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
-      emptyResponse.statusCode == HttpStatus.OK
+      HttpResponseWrapper emptyResponse = serviceClient.getAccounts(importId)
+      emptyResponse.statusCode == HttpStatus.NO_CONTENT
       emptyResponse.body == null
     }
   }

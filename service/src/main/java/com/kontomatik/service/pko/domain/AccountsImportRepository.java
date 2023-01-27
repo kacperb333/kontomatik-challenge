@@ -1,6 +1,7 @@
 package com.kontomatik.service.pko.domain;
 
 import com.kontomatik.service.pko.domain.FinishedImport.FailedImport;
+import com.kontomatik.service.pko.domain.FinishedImport.ImportId;
 import com.kontomatik.service.pko.domain.FinishedImport.SuccessfulImport;
 
 import java.util.Optional;
@@ -10,5 +11,5 @@ public interface AccountsImportRepository {
 
   FailedImport save(FailedImport failedImport);
 
-  Optional<FinishedImport> findAccountsImport(SessionId sessionId);
+  Optional<FinishedImport> findAccountsImport(ImportId importId);
 }

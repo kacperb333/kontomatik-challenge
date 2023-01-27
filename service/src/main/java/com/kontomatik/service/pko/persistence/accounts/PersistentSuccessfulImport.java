@@ -1,8 +1,8 @@
 package com.kontomatik.service.pko.persistence.accounts;
 
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
+import com.kontomatik.service.pko.domain.FinishedImport.ImportId;
 import com.kontomatik.service.pko.domain.FinishedImport.SuccessfulImport;
-import com.kontomatik.service.pko.domain.SessionId;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -14,12 +14,12 @@ class PersistentSuccessfulImport extends PersistentImport {
 
   @PersistenceCreator
   PersistentSuccessfulImport(
-    SessionId sessionId,
+    ImportId importId,
     Accounts accounts,
     Instant persistedAt
   ) {
     super(
-      sessionId,
+      importId,
       persistedAt
     );
     this.accounts = accounts;
@@ -27,7 +27,7 @@ class PersistentSuccessfulImport extends PersistentImport {
 
   static PersistentSuccessfulImport fromDomain(SuccessfulImport domainImport, Instant at) {
     return new PersistentSuccessfulImport(
-      domainImport.sessionId(),
+      domainImport.importId(),
       domainImport.accounts(),
       at
     );
@@ -35,6 +35,6 @@ class PersistentSuccessfulImport extends PersistentImport {
 
   @Override
   SuccessfulImport toDomain() {
-    return new SuccessfulImport(sessionId, accounts);
+    return new SuccessfulImport(importId, accounts);
   }
 }

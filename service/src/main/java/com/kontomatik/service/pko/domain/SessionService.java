@@ -5,6 +5,7 @@ import com.kontomatik.lib.pko.domain.accounts.Accounts;
 import com.kontomatik.lib.pko.domain.signin.Credentials;
 import com.kontomatik.lib.pko.domain.signin.Otp;
 import com.kontomatik.service.pko.domain.FinishedImport.FailedImport;
+import com.kontomatik.service.pko.domain.FinishedImport.ImportId;
 import com.kontomatik.service.pko.domain.FinishedImport.SuccessfulImport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,36 +41,37 @@ public class SessionService {
     return sessionRepository.save(otpRequiredSession);
   }
 
-  public ImportInProgressSession inputOtp(SessionId sessionId, Otp otp) {
+  public ImportId inputOtp(SessionId sessionId, Otp otp) {
     OtpRequiredSession otpRequiredSession = sessionRepository.getOtpRequiredSession(sessionId);
-    ImportInProgressSession importInProgressSession = otpRequiredSession.finishSignIn(
+    LoggedInSession loggedInSession = otpRequiredSession.finishSignIn(
       pkoScraperFacade.inputOtp(
         otpRequiredSession.pkoSession(),
         otp
       )
     );
-    scheduleAccountsImport(importInProgressSession);
-    return importInProgressSession;
+    ImportId generatedImportId = ImportIdGenerator.generate();
+    scheduleAccountsImport(loggedInSession, generatedImportId);
+    return generatedImportId;
   }
 
-  private void scheduleAccountsImport(ImportInProgressSession importInProgressSession) {
-    Runnable importTask = () -> importAccounts(importInProgressSession);
+  private void scheduleAccountsImport(LoggedInSession importInProgressSession, ImportId importId) {
+    Runnable importTask = () -> importAccounts(importInProgressSession, importId);
     accountsImportScheduler.schedule(importTask);
   }
 
-  private void importAccounts(ImportInProgressSession importInProgressSession) {
+  private void importAccounts(LoggedInSession loggedInSession, ImportId importId) {
     try {
-      Accounts accounts = pkoScraperFacade.fetchAccounts(importInProgressSession.pkoSession());
-      SuccessfulImport successfulImport = importInProgressSession.finishSuccessful(accounts);
+      Accounts accounts = pkoScraperFacade.fetchAccounts(loggedInSession.pkoSession());
+      SuccessfulImport successfulImport = loggedInSession.finishSuccessfully(importId, accounts);
       accountsImportRepository.save(successfulImport);
     } catch (Exception e) {
       log.error("Encountered exception during import", e);
-      FailedImport failedImport = importInProgressSession.finishFailed();
+      FailedImport failedImport = loggedInSession.finishFailed(importId);
       accountsImportRepository.save(failedImport);
     }
   }
 
-  public Optional<FinishedImport> findSessionAccountsImport(SessionId sessionId) {
-    return accountsImportRepository.findAccountsImport(sessionId);
+  public Optional<FinishedImport> findAccountsImport(ImportId importId) {
+    return accountsImportRepository.findAccountsImport(importId);
   }
 }

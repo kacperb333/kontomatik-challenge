@@ -5,13 +5,18 @@ import com.kontomatik.lib.pko.domain.accounts.Accounts;
 public sealed interface FinishedImport {
 
   public record SuccessfulImport(
-    SessionId sessionId,
+    ImportId importId,
     Accounts accounts
   ) implements FinishedImport {
   }
 
   record FailedImport(
-    SessionId sessionId
+    ImportId importId
   ) implements FinishedImport {
+  }
+
+  record ImportId(
+    String value
+  ) {
   }
 }

@@ -1,7 +1,7 @@
 package com.kontomatik.service.pko.persistence.accounts;
 
 import com.kontomatik.service.pko.domain.FinishedImport.FailedImport;
-import com.kontomatik.service.pko.domain.SessionId;
+import com.kontomatik.service.pko.domain.FinishedImport.ImportId;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
 
@@ -12,24 +12,24 @@ class PersistentFailedImport extends PersistentImport {
 
   @PersistenceCreator
   public PersistentFailedImport(
-    SessionId sessionId,
+    ImportId importId,
     Instant persistedAt
   ) {
     super(
-      sessionId,
+      importId,
       persistedAt
     );
   }
 
   static PersistentFailedImport fromDomain(FailedImport domainImport, Instant at) {
     return new PersistentFailedImport(
-      domainImport.sessionId(),
+      domainImport.importId(),
       at
     );
   }
 
   @Override
   FailedImport toDomain() {
-    return new FailedImport(sessionId);
+    return new FailedImport(importId);
   }
 }
