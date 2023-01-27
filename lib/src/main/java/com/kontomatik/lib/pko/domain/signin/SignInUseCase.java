@@ -36,7 +36,7 @@ public class SignInUseCase {
 
   private static PostRequest prepareLoginRequest(String login) {
     return PostRequest.Builder
-      .withStandardHeaders()
+      .jsonRequest()
       .withBody(PkoSignInRequest.newRequest(login))
       .build();
   }
@@ -70,7 +70,7 @@ public class SignInUseCase {
 
   private static PostRequest preparePasswordRequest(String password, PasswordRequiredPkoSession passwordRequiredPkoSession) {
     return PostRequest.Builder
-      .withStandardHeaders()
+      .jsonRequest()
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(passwordRequiredPkoSession))
       .withBody(PkoPasswordRequest.newRequest(password, passwordRequiredPkoSession))
       .build();
@@ -105,7 +105,7 @@ public class SignInUseCase {
 
   private static PostRequest prepareOtpRequest(String otp, OtpRequiredPkoSession loginInProgressPkoSession) {
     return PostRequest.Builder
-      .withStandardHeaders()
+      .jsonRequest()
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loginInProgressPkoSession))
       .withBody(PkoOtpRequest.newRequest(otp, loginInProgressPkoSession))
       .build();

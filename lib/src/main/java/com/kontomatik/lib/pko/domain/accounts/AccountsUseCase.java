@@ -27,7 +27,7 @@ public class AccountsUseCase {
 
   private static PostRequest prepareAccountsRequest(LoggedInPkoSession loggedInPkoSession) {
     return PostRequest.Builder
-      .withStandardHeaders()
+      .jsonRequest()
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loggedInPkoSession))
       .withBody(AccountsRequest.newRequest())
       .build();

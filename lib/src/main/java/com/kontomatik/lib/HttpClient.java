@@ -30,7 +30,7 @@ public interface HttpClient {
         this.headers.putAll(headers);
       }
 
-      public static Builder withStandardHeaders() {
+      public static Builder jsonRequest() {
         return new Builder(Map.of("accept", "application/json"));
       }
 

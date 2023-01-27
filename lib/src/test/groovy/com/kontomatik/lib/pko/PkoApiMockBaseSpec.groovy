@@ -23,7 +23,6 @@ abstract class PkoApiMockBaseSpec extends Specification {
     stubPkoOtp(CORRECT_OTP, successfulOtpResponse())
     stubPkoOtp(INCORRECT_OTP, wrongOtpResponse())
     stubPkoAccounts(successfulAccountsResponse(CORRECT_RETURNED_ACCOUNTS))
-
   }
 
   def cleanup() {

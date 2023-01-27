@@ -12,11 +12,6 @@ public class ScraperFacade {
   private final SignInUseCase pkoSignInUseCase;
   private final AccountsUseCase pkoAccountsUseCase;
 
-  private ScraperFacade(SignInUseCase pkoSignInUseCase, AccountsUseCase pkoAccountsUseCase) {
-    this.pkoSignInUseCase = pkoSignInUseCase;
-    this.pkoAccountsUseCase = pkoAccountsUseCase;
-  }
-
   public static ScraperFacade scraperFacade() {
     return scraperFacade("https://www.ipko.pl/ipko3");
   }
@@ -26,6 +21,11 @@ public class ScraperFacade {
     var pkoSignInUseCase = new SignInUseCase(httpClient);
     var pkoAccountsUseCase = new AccountsUseCase(httpClient);
     return new ScraperFacade(pkoSignInUseCase, pkoAccountsUseCase);
+  }
+
+  private ScraperFacade(SignInUseCase pkoSignInUseCase, AccountsUseCase pkoAccountsUseCase) {
+    this.pkoSignInUseCase = pkoSignInUseCase;
+    this.pkoAccountsUseCase = pkoAccountsUseCase;
   }
 
   public OtpRequiredPkoSession signIn(Credentials credentials) {
