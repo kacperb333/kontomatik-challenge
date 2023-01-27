@@ -1,14 +1,13 @@
-package com.kontomatik.service.pko
+package com.kontomatik.service.pko.utils
 
 
+import com.kontomatik.service.pko.ScraperController
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
-
-import static ScraperController.SESSION_HEADER
 
 class ServiceClient {
 
@@ -19,7 +18,7 @@ class ServiceClient {
     this.servicePort = servicePort
   }
 
-  HttpResponseWrapper postSignIn(String login, String password) {
+    HttpResponseWrapper postSignIn(String login, String password) {
     return post(
       [
         "content-type": "application/json"
@@ -40,7 +39,7 @@ class ServiceClient {
     return post(
       [
         "content-type"  : "application/json",
-        (SESSION_HEADER): sessionId
+        (ScraperController.SESSION_HEADER): sessionId
       ],
       "/session/otp",
       """
@@ -56,7 +55,7 @@ class ServiceClient {
   HttpResponseWrapper getAccounts(String sessionId) {
     get(
       [
-        (SESSION_HEADER): sessionId
+        (ScraperController.SESSION_HEADER): sessionId
       ],
       "/session/accounts"
     )
@@ -97,6 +96,6 @@ class ServiceClient {
   }
 
   static String extractSessionId(HttpResponseWrapper response) {
-    return response.headers.getFirst(SESSION_HEADER)
+    return response.headers.getFirst(ScraperController.SESSION_HEADER)
   }
 }

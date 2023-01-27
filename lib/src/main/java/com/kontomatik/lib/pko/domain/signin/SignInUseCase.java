@@ -21,7 +21,7 @@ public class SignInUseCase {
 
   private PasswordRequiredPkoSession enterLogin(String login) {
     PostRequest postRequest = prepareLoginRequest(login);
-    Response response = httpClient.post("/login", postRequest);
+    Response response = httpClient.execute(postRequest);
     assertCorrectLogin(response);
     assertPasswordRequired(response);
     String responseSessionId = assertContainsSessionId(response);
@@ -37,6 +37,7 @@ public class SignInUseCase {
   private static PostRequest prepareLoginRequest(String login) {
     return PostRequest.Builder
       .jsonRequest()
+      .withUrl("/login")
       .withBody(PkoSignInRequest.newRequest(login))
       .build();
   }
@@ -55,7 +56,7 @@ public class SignInUseCase {
 
   private OtpRequiredPkoSession enterPassword(String password, PasswordRequiredPkoSession passwordRequiredPkoSession) {
     PostRequest postRequest = preparePasswordRequest(password, passwordRequiredPkoSession);
-    Response response = httpClient.post("/login", postRequest);
+    Response response = httpClient.execute(postRequest);
     assertCorrectPassword(response);
     assertOneTimePasswordRequired(response);
     String responseSessionId = assertContainsSessionId(response);
@@ -71,6 +72,7 @@ public class SignInUseCase {
   private static PostRequest preparePasswordRequest(String password, PasswordRequiredPkoSession passwordRequiredPkoSession) {
     return PostRequest.Builder
       .jsonRequest()
+      .withUrl("/login")
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(passwordRequiredPkoSession))
       .withBody(PkoPasswordRequest.newRequest(password, passwordRequiredPkoSession))
       .build();
@@ -94,7 +96,7 @@ public class SignInUseCase {
 
   private LoggedInPkoSession enterOtp(String otp, OtpRequiredPkoSession loginInProgressPkoSession) {
     PostRequest postRequest = prepareOtpRequest(otp, loginInProgressPkoSession);
-    Response response = httpClient.post("/login", postRequest);
+    Response response = httpClient.execute(postRequest);
     assertCorrectOtp(response);
     assertSignInFinished(response);
     String responseSessionId = assertContainsSessionId(response);
@@ -106,6 +108,7 @@ public class SignInUseCase {
   private static PostRequest prepareOtpRequest(String otp, OtpRequiredPkoSession loginInProgressPkoSession) {
     return PostRequest.Builder
       .jsonRequest()
+      .withUrl("/login")
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loginInProgressPkoSession))
       .withBody(PkoOtpRequest.newRequest(otp, loginInProgressPkoSession))
       .build();

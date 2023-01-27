@@ -1,6 +1,7 @@
 package com.kontomatik.service
 
 import com.kontomatik.service.common.DateTimeProvider
+import groovy.json.JsonSlurper
 import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -57,6 +58,13 @@ abstract class BaseIntegrationSpec extends Specification {
 
   private void clearAllCollections() {
     mongoTemplate.collectionNames.forEach { mongoTemplate.remove(new Query(), it) }
+  }
+
+  protected boolean jsonsEqual(String first, String second) {
+    JsonSlurper slurper = new JsonSlurper()
+    def firstJson = slurper.parseText(first)
+    def secondJson = slurper.parseText(second)
+    return firstJson == secondJson
   }
 }
 

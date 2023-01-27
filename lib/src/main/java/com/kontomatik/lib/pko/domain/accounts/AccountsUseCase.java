@@ -20,7 +20,7 @@ public class AccountsUseCase {
 
   public Accounts fetchAccounts(LoggedInPkoSession loggedInPkoSession) {
     PostRequest postRequest = prepareAccountsRequest(loggedInPkoSession);
-    Response response = httpClient.post("/init", postRequest);
+    Response response = httpClient.execute(postRequest);
     Map<String, JsonElement> accounts = response.extractMap("response", "data", "accounts");
     return parseAccounts(accounts);
   }
@@ -28,6 +28,7 @@ public class AccountsUseCase {
   private static PostRequest prepareAccountsRequest(LoggedInPkoSession loggedInPkoSession) {
     return PostRequest.Builder
       .jsonRequest()
+      .withUrl("/init")
       .withHeader(PkoConstants.SESSION_HEADER_NAME, extractPkoSessionId(loggedInPkoSession))
       .withBody(AccountsRequest.newRequest())
       .build();
@@ -46,12 +47,10 @@ public class AccountsUseCase {
   }
 
   private static Account parseAccount(JsonObject jsonAccount) {
-    return new Account(
-      new Account.Name(GsonUtils.extractString(jsonAccount, "name")),
-      new Account.Balance(
-        new Account.Balance.Amount(GsonUtils.extractString(jsonAccount, "balance")),
-        new Account.Balance.Currency(GsonUtils.extractString(jsonAccount, "currency"))
-      )
+    return Account.from(
+      GsonUtils.extractString(jsonAccount, "name"),
+      GsonUtils.extractString(jsonAccount, "balance"),
+      GsonUtils.extractString(jsonAccount, "currency")
     );
   }
 }

@@ -5,5 +5,4 @@ import java.util.List;
 public record Accounts(
   List<Account> list
 ) {
-  public static final Accounts EMPTY = new Accounts(null);
 }

@@ -1,6 +1,6 @@
 package com.kontomatik.service.pko.persistence.accounts;
 
-import com.kontomatik.service.pko.domain.FailedImport;
+import com.kontomatik.service.pko.domain.FinishedImport.FailedImport;
 import com.kontomatik.service.pko.domain.SessionId;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;

@@ -1,6 +1,6 @@
 package com.kontomatik.lib.pko
 
-
+import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
 import com.kontomatik.lib.pko.domain.signin.*
 import spock.lang.Subject
@@ -21,7 +21,10 @@ class ScraperFacadeSpec extends PkoApiMockBaseSpec {
     Accounts fetchedAccounts = pkoScraperFacade.fetchAccounts(loggedInPkoSession)
 
     then:
-    fetchedAccounts == CORRECT_RETURNED_ACCOUNTS
+    fetchedAccounts == new Accounts([
+      Account.from("account-1", "2000.00", "PLN"),
+      Account.from("account-2", "3000.00", "EUR")
+    ])
   }
 
   def "should throw InvalidCredentials on wrong login response"() {

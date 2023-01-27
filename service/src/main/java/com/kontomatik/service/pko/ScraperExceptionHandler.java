@@ -17,7 +17,7 @@ class ScraperExceptionHandler {
   ResponseEntity<ErrorMessage> handle(InvalidCredentials ex) {
     return warnAndRespond(
       "InvalidCredentials",
-      "Invalid credentials. Please, try again",
+      "Invalid credentials. Please, try again.",
       HttpStatus.UNPROCESSABLE_ENTITY,
       ex
     );
@@ -37,7 +37,7 @@ class ScraperExceptionHandler {
   ResponseEntity<ErrorMessage> handle(Exception ex) {
     return warnAndRespond(
       "Error",
-      "Unexpected error occurred, please contact us.",
+      "Unexpected error occurred.",
       HttpStatus.INTERNAL_SERVER_ERROR,
       ex
     );

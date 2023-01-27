@@ -3,7 +3,11 @@ package com.kontomatik.service.pko;
 import com.kontomatik.lib.pko.domain.accounts.Account;
 import com.kontomatik.lib.pko.domain.signin.Credentials;
 import com.kontomatik.lib.pko.domain.signin.Otp;
-import com.kontomatik.service.pko.domain.*;
+import com.kontomatik.service.pko.domain.FinishedImport;
+import com.kontomatik.service.pko.domain.FinishedImport.FailedImport;
+import com.kontomatik.service.pko.domain.FinishedImport.SuccessfulImport;
+import com.kontomatik.service.pko.domain.SessionId;
+import com.kontomatik.service.pko.domain.SessionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -100,7 +104,7 @@ class ScraperController {
       static AccountResponse from(Account account) {
         return new AccountResponse(
           account.name().value(),
-          account.balance().amount().value(),
+          account.balance().amount().value().toString(),
           account.balance().currency().value()
         );
       }

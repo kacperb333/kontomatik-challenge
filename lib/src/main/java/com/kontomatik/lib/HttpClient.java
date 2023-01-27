@@ -7,22 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface HttpClient {
-  Response post(String url, PostRequest request);
+  Response execute(PostRequest request);
 
-  class PostRequest {
-    private final Map<String, String> headers;
-    public final Object body;
-
-    private PostRequest(Map<String, String> headers, Object body) {
-      this.headers = headers;
-      this.body = body;
-    }
-
+  record PostRequest(
+    String url,
+    Map<String, String> headers,
+    Object body
+  ) {
     public Map<String, String> headers() {
       return Collections.unmodifiableMap(headers);
     }
 
     public static class Builder {
+      private String url;
       private final Map<String, String> headers = new HashMap<>();
       private Object body;
 
@@ -39,13 +36,18 @@ public interface HttpClient {
         return this;
       }
 
+      public Builder withUrl(String url) {
+        this.url = url;
+        return this;
+      }
+
       public Builder withBody(Object body) {
         this.body = body;
         return this;
       }
 
       public PostRequest build() {
-        return new PostRequest(headers, body);
+        return new PostRequest(url, headers, body);
       }
     }
   }

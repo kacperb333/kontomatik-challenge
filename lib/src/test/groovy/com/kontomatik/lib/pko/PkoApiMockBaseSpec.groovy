@@ -3,12 +3,9 @@ package com.kontomatik.lib.pko
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.kontomatik.lib.pko.domain.PkoConstants
-import com.kontomatik.lib.pko.domain.accounts.Account
-import com.kontomatik.lib.pko.domain.accounts.Accounts
 import spock.lang.Specification
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*
-import static groovy.json.JsonOutput.toJson
 
 abstract class PkoApiMockBaseSpec extends Specification {
 
@@ -22,7 +19,7 @@ abstract class PkoApiMockBaseSpec extends Specification {
     stubPkoPassword(INCORRECT_PASSWORD, wrongPasswordResponse())
     stubPkoOtp(CORRECT_OTP, successfulOtpResponse())
     stubPkoOtp(INCORRECT_OTP, wrongOtpResponse())
-    stubPkoAccounts(successfulAccountsResponse(CORRECT_RETURNED_ACCOUNTS))
+    stubPkoAccounts(successfulAccountsResponse())
   }
 
   def cleanup() {
@@ -37,23 +34,6 @@ abstract class PkoApiMockBaseSpec extends Specification {
 
   static String CORRECT_OTP = "correct-otp"
   static String INCORRECT_OTP = "incorrect-otp"
-
-  static Accounts CORRECT_RETURNED_ACCOUNTS = new Accounts([
-    new Account(
-      new Account.Name("account-1"),
-      new Account.Balance(
-        new Account.Balance.Amount("2000.00"),
-        new Account.Balance.Currency("PLN")
-      )
-    ),
-    new Account(
-      new Account.Name("account-2"),
-      new Account.Balance(
-        new Account.Balance.Amount("3000.00"),
-        new Account.Balance.Currency("EUR")
-      )
-    )
-  ])
 
   static String loginRequest(String login) {
     return """
@@ -162,21 +142,23 @@ abstract class PkoApiMockBaseSpec extends Specification {
     """
   }
 
-  static ResponseDefinitionBuilder successfulAccountsResponse(Accounts accounts) {
-    Map accountsMap = accounts.list().collectEntries {
-      String accountId = "${it.name().value()}-id"
-      [(accountId): [
-        "balance" : it.balance().amount().value(),
-        "currency": it.balance().currency().value(),
-        "name"    : it.name().value()
-      ]]
-    }
-
+  static ResponseDefinitionBuilder successfulAccountsResponse() {
     return okJson("""
       {
         "response": {
           "data": {
-            "accounts": ${toJson(accountsMap)}
+            "accounts": {
+              "account-1-id": {
+                "name": "account-1",
+                "balance": "2000.00",
+                "currency": "PLN"
+              },
+              "account-2-id": {
+                "name": "account-2",
+                "balance": "3000.00",
+                "currency": "EUR"
+              }
+            }
           }
         }
       }

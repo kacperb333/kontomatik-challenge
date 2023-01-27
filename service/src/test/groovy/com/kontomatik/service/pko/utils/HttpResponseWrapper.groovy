@@ -1,6 +1,6 @@
-package com.kontomatik.service.pko
+package com.kontomatik.service.pko.utils
 
-import groovy.json.JsonSlurper
+
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatusCode
 
@@ -13,9 +13,5 @@ class HttpResponseWrapper {
     this.statusCode = statusCode
     this.headers = headers
     this.body = body
-  }
-
-  Object slurped() {
-    return new JsonSlurper().parseText(body)
   }
 }

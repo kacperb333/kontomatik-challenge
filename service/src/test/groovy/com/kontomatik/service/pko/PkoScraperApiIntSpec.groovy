@@ -2,19 +2,22 @@ package com.kontomatik.service.pko
 
 import com.kontomatik.lib.pko.domain.accounts.Account
 import com.kontomatik.lib.pko.domain.accounts.Accounts
+import com.kontomatik.service.pko.utils.HttpResponseWrapper
+import com.kontomatik.service.pko.utils.ServiceClient
 import org.springframework.http.HttpStatus
 import spock.util.concurrent.PollingConditions
 
 import java.time.Instant
 import java.util.concurrent.CountDownLatch
 
-import static ServiceClient.extractSessionId
+import static com.kontomatik.service.pko.utils.ServiceClient.extractSessionId
 import static java.time.temporal.ChronoUnit.HOURS
 import static java.time.temporal.ChronoUnit.MINUTES
 
 class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
-  PollingConditions poll = new PollingConditions(timeout: 70)
+  PollingConditions poll = new PollingConditions(timeout: 1)
+  PollingConditions retentionPoll = new PollingConditions(timeout: 70)
   ServiceClient serviceClient
 
   def setup() {
@@ -32,27 +35,9 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     stubAccounts {
       importLatch.await()
       new Accounts([
-        new Account(
-          new Account.Name("account-1"),
-          new Account.Balance(
-            new Account.Balance.Amount("1000.00"),
-            new Account.Balance.Currency("PLN")
-          )
-        ),
-        new Account(
-          new Account.Name("account-2"),
-          new Account.Balance(
-            new Account.Balance.Amount("2000.00"),
-            new Account.Balance.Currency("EUR")
-          )
-        ),
-        new Account(
-          new Account.Name("account-3"),
-          new Account.Balance(
-            new Account.Balance.Amount("3000.00"),
-            new Account.Balance.Currency("USD")
-          )
-        )
+        Account.from("account-1", "1000.00", "PLN"),
+        Account.from("account-2", "2000.00", "EUR"),
+        Account.from("account-3", "3000.00", "USD")
       ])
     }
 
@@ -84,21 +69,27 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     poll.eventually {
       HttpResponseWrapper accountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
       accountsResponse.statusCode == HttpStatus.OK
-      with(accountsResponse.slurped()) {
-        it.data.size() == 3
-        with(it.data.find { it.name == "account-1" }) {
-          it.balance == "1000.00"
-          it.currency == "PLN"
+      jsonsEqual(accountsResponse.body, """
+        {
+          "data": [
+            {
+              "name": "account-1",
+              "balance": "1000.00",
+              "currency": "PLN"
+            },
+            {
+              "name": "account-2",
+              "balance": "2000.00",
+              "currency": "EUR"
+            },
+            {
+              "name": "account-3",
+              "balance": "3000.00",
+              "currency": "USD"
+            }
+          ]
         }
-        with(it.data.find { it.name == "account-2" }) {
-          it.balance == "2000.00"
-          it.currency == "EUR"
-        }
-        with(it.data.find { it.name == "account-3" }) {
-          it.balance == "3000.00"
-          it.currency == "USD"
-        }
-      }
+      """)
     }
   }
 
@@ -111,9 +102,12 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
     then:
     signInResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
-    with(signInResponse.slurped()) {
-      it.code == "InvalidCredentials"
-    }
+    jsonsEqual(signInResponse.body, """
+      {
+        "code": "InvalidCredentials",
+        "message": "Invalid credentials. Please, try again."
+      }
+    """)
   }
 
   def "should return InvalidCredentials response in case otp input fails"() {
@@ -128,9 +122,12 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
     then:
     otpResponse.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
-    with(otpResponse.slurped()) {
-      it.code == "InvalidCredentials"
-    }
+    jsonsEqual(otpResponse.body, """
+      {
+        "code": "InvalidCredentials",
+        "message": "Invalid credentials. Please, try again."
+      }
+    """)
   }
 
   def "should return internal sever error on unexpected exception during sign in"() {
@@ -142,9 +139,12 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
     then:
     signInResponse.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
-    with(signInResponse.slurped()) {
-      it.code == "Error"
-    }
+    jsonsEqual(signInResponse.body, """
+      {
+        "code": "Error",
+        "message": "Unexpected error occurred."
+      }
+    """)
   }
 
   def "should return internal sever error on unexpected exception during otp"() {
@@ -159,9 +159,12 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
 
     then:
     otpResponse.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
-    with(otpResponse.slurped()) {
-      it.code == "Error"
-    }
+    jsonsEqual(otpResponse.body, """
+      {
+        "code": "Error",
+        "message": "Unexpected error occurred."
+      }
+    """)
   }
 
   def "should return info about failed import when accounts import fails for any reason"() {
@@ -182,9 +185,11 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
       String importSessionId = extractSessionId(otpResponse)
       HttpResponseWrapper accountsResponse = serviceClient.getAccounts(importSessionId)
       accountsResponse.statusCode == HttpStatus.OK
-      with(accountsResponse.slurped()) {
-        it.data == "Import failed for session ['$importSessionId']"
-      }
+      jsonsEqual(accountsResponse.body, """
+        {
+          "data": "Import failed for session ['$importSessionId']"
+        }
+      """)
     }
   }
 
@@ -199,15 +204,15 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     HttpResponseWrapper signInResponse = serviceClient.postSignIn(CORRECT_LOGIN, CORRECT_PASSWORD)
 
     then:
-    poll.eventually {
+    retentionPoll.eventually {
       HttpResponseWrapper otpResponse = serviceClient.postOtp(CORRECT_OTP, extractSessionId(signInResponse))
-      with(otpResponse.slurped()) {
-        it.code == "SessionNotFound"
-      }
+      jsonsEqual(otpResponse.body, """
+        {
+          "code": "SessionNotFound",
+          "message": "Session with id [${extractSessionId(signInResponse)}] not found. Make sure proper x-session header is set."
+        }
+      """)
     }
-
-    and:
-    dateTimeProvider.now() >> Instant.now().minus(5, MINUTES)
   }
 
   def "should retain imported accounts for up to 24 hours"() {
@@ -225,11 +230,11 @@ class PkoScraperApiIntSpec extends ScraperFacadeMockBaseSpec {
     poll.eventually {
       HttpResponseWrapper accountsResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
       accountsResponse.statusCode == HttpStatus.OK
-      accountsResponse.slurped().data != null
+      accountsResponse.body != null
     }
 
     and:
-    poll.eventually {
+    retentionPoll.eventually {
       HttpResponseWrapper emptyResponse = serviceClient.getAccounts(extractSessionId(otpResponse))
       emptyResponse.statusCode == HttpStatus.OK
       emptyResponse.body == null

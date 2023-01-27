@@ -1,8 +1,8 @@
 package com.kontomatik.service.pko.persistence.accounts;
 
 import com.kontomatik.lib.pko.domain.accounts.Accounts;
+import com.kontomatik.service.pko.domain.FinishedImport.SuccessfulImport;
 import com.kontomatik.service.pko.domain.SessionId;
-import com.kontomatik.service.pko.domain.SuccessfulImport;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
 

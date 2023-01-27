@@ -34,14 +34,14 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   @Override
-  public Response post(String url, PostRequest request) {
-    return doPost(preparePost(url, request));
+  public Response execute(PostRequest request) {
+    return doPost(preparePost(request));
   }
 
-  private HttpPost preparePost(String url, PostRequest request) {
-    HttpPost httpPost = new HttpPost(baseUrl + url);
+  private HttpPost preparePost(PostRequest request) {
+    HttpPost httpPost = new HttpPost(baseUrl + request.url());
     request.headers().forEach(httpPost::addHeader);
-    httpPost.setEntity(asStringEntity(request.body));
+    httpPost.setEntity(asStringEntity(request.body()));
     return httpPost;
   }
 
