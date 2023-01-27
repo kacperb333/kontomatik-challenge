@@ -62,7 +62,7 @@ If accounts data import failed returns:
 ```
 ```json
 {
-  "data": "Import failed."
+  "message": "Import failed."
 }
 ```
 After accounts data has been imported successfully returns (example):
@@ -71,7 +71,7 @@ After accounts data has been imported successfully returns (example):
 ```
 ```json
 {
-  "data": [
+  "accounts": [
     {
       "name": "Account name",
       "balance": "100.00",
