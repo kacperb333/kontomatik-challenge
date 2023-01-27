@@ -4,7 +4,7 @@ import com.kontomatik.lib.pko.domain.accounts.Accounts;
 
 public sealed interface FinishedImport {
 
-  public record SuccessfulImport(
+  record SuccessfulImport(
     ImportId importId,
     Accounts accounts
   ) implements FinishedImport {

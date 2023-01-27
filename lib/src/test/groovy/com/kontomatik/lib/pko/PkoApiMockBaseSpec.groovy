@@ -27,8 +27,8 @@ abstract class PkoApiMockBaseSpec extends Specification {
 
   HttpClientBuilder configureApacheHttpTestProxy() {
     TrustStrategy acceptingTrustStrategy = new TrustAllStrategy()
-    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(acceptingTrustStrategy).build();
-    SSLConnectionSocketFactory connectionSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(acceptingTrustStrategy).build()
+    SSLConnectionSocketFactory connectionSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE)
     HttpClientBuilder.create()
       .setProxy(HttpHost.create("http://localhost:8090"))
       .setSSLSocketFactory(connectionSocketFactory)
